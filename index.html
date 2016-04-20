@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <base href="/">
+  <title>basic midenquest calcs</title>
+  <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+  <script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+  ga('create', 'UA-76656675-1', 'auto');
+  ga('send', 'pageview');
+</script>
+</head>
+<body>
+  <div class="container">
+    <div id="app">
+      <!-- resources found component -->
+      <div class='row'>
+        <h4>Amount of Resources Found</h4>
+      </div>
+      <div class='row'>
+        <div class='col-md-2'>Skill Level</div>
+        <div class='col-md-2'>Work Efficiency Level</div>
+        <div class='col-md-2'>Resource% Level</div>
+        <div class='col-md-1'>Tier 1</div>
+        <div class='col-md-1'>Tier 2</div>
+        <div class='col-md-1'>Tier 3</div>
+        <div class='col-md-1'>Tier 4</div>
+        <div class='col-md-1'>Tier 5</div>
+      </div>
+      <div class='row'>
+        <div class='col-md-2'>
+          <input type="number" class="form-control" id="tsLevel" placeholder="0" value='10' />
+        </div>
+        <div class='col-md-2'>
+          <input type="number" class="form-control" id="weLevel" placeholder="0" value='10' />
+        </div>
+        <div class='col-md-2'>
+          <input type="number" class="form-control" id="resLevel" placeholder="0" value='10' />
+        </div>
+        <div id='tsTier1' class='col-md-1'>0</div>
+        <div id='tsTier2' class='col-md-1'>0</div>
+        <div id='tsTier3' class='col-md-1'>0</div>
+        <div id='tsTier4' class='col-md-1'>0</div>
+        <div id='tsTier5' class='col-md-1'>0</div>
+      </div>
+
+      <!-- enchanting component -->
+      <div class='row'>
+        <h4>Enchanting Information</h4><h6>Default: enchanting with mastered Dex 1</h6>
+      </div>
+      <div class='row'>
+        <div class='col-md-1'>Current Level</div>
+        <div class='col-md-1'>Target Level</div>
+        <div class='col-md-1'>XP per Success</div>
+        <div class='col-md-1'>XP per Removal</div>
+        <div class='col-md-1'>ME per Success</div>
+        <div class='col-md-1'>ME per Removal</div>
+        <div class='col-md-1'>Total XP Required</div>
+        <div class='col-md-1'>Total Enchants</div>
+        <div class='col-md-1'>Total ME Used</div>
+      </div>
+      <div class='row'>
+        <div class='col-md-1'>
+          <input type="number" class="form-control" id="enchCurrentLevel" placeholder="0" value='3' />
+        </div>
+        <div class='col-md-1'>
+          <input type="number" class="form-control" id="enchTargetLevel" placeholder="0" value='15' />
+        </div>
+        <div class='col-md-1'>
+          <input type="number" class="form-control" id="enchXPSuccess" placeholder="0" value='2' />
+        </div>
+        <div class='col-md-1'>
+          <input type="number" class="form-control" id="enchXPRemove" placeholder="0" value='2' />
+        </div>
+        <div class='col-md-1'>
+          <input type="number" class="form-control" id="enchMESuccess" placeholder="0" value='3' />
+        </div>
+        <div class='col-md-1'>
+          <input type="number" class="form-control" id="enchMERemove" placeholder="0" value='1' />
+        </div>
+        <div id='enchXPRequired' class='col-md-1'>0</div>
+        <div id='enchTotalEnchants' class='col-md-1'>0</div>
+        <div id='enchMEUsed' class='col-md-1'>0</div>
+      </div>
+    </div>
+  </div>
+
+
+  <script src="https://code.jquery.com/jquery-2.2.3.min.js" integrity="sha256-a23g1Nt4dtEYOj7bR+vTu7+T8VP13humZFBJNIYoEJo=" crossorigin="anonymous"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.11.1/lodash.min.js"></script>
+  <script>
+// Tradeskill handlers
+$('#tsLevel').change(function(e) {
+  recalculateTradeskill();
+});
+$('#weLevel').change(function(e) {
+  recalculateTradeskill();
+});
+$('#resLevel').change(function(e) {
+  recalculateTradeskill();
+});
+
+function recalculateTradeskill() {
+  var tsLevel = parseInt($('#tsLevel').val());
+  var weLevel = parseInt($('#weLevel').val());
+  var resLevel = parseInt($('#resLevel').val());
+
+  var t1 = (tsLevel+weLevel)/100+1+resLevel/100;
+  var t2 = t1 * 7/9;
+  var t3 = t1 * 6/9;
+  var t4 = t1 * 5/9;
+  var t5 = t1 * 4/9;
+  //console.info(tsLevel, weLevel, resLevel, t1, t2, t3, t4, t5);
+
+  $('#tsTier1').text(t1.toFixed(2));
+  $('#tsTier2').text(t2.toFixed(2));
+  $('#tsTier3').text(t3.toFixed(2));
+  $('#tsTier4').text(t4.toFixed(2));
+  $('#tsTier5').text(t5.toFixed(2));
+}
+recalculateTradeskill();
+
+// Enchanting handlers
+$('#enchCurrentLevel').change(function(e) {
+  recalculateEnchanting();
+});
+$('#enchTargetLevel').change(function(e) {
+  recalculateEnchanting();
+});
+$('#enchXPSuccess').change(function(e) {
+  recalculateEnchanting();
+});
+$('#enchXPRemove').change(function(e) {
+  recalculateEnchanting();
+});
+$('#enchMESuccess').change(function(e) {
+  recalculateEnchanting();
+});
+$('#enchMERemove').change(function(e) {
+  recalculateEnchanting();
+});
+function recalculateEnchanting() {
+  var curLevel = parseInt($('#enchCurrentLevel').val());
+  var tgtLevel = parseInt($('#enchTargetLevel').val());
+  var xpSuccess = parseInt($('#enchXPSuccess').val());
+  var xpRemove = parseInt($('#enchXPRemove').val());
+  var meSuccess = parseInt($('#enchMESuccess').val());
+  var meRemove = parseInt($('#enchMERemove').val());
+
+  var totalXp = _.sum(_.range(curLevel+1, tgtLevel+1)) * 100;
+  var totalAttempts = totalXp / (xpSuccess + xpRemove);
+  var totalME = totalAttempts * (meSuccess - meRemove);
+  //console.info(curLevel+1, tgtLevel+1, totalXp, xpSuccess, xpRemove, meSuccess, meRemove);
+  $('#enchMEUsed').text(totalME.toFixed(2));
+  $('#enchTotalEnchants').text(totalAttempts.toFixed(2));
+  $('#enchXPRequired').text(totalXp.toFixed(2));
+};
+recalculateEnchanting();
+  </script>
+}
+</body>
+</html>
