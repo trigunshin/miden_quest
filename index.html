@@ -1,1 +1,82 @@
-hoi im tem
+<!DOCTYPE html>
+<html>
+<head lang="en">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <base href="/">
+  <title>basic midenquest calcs</title>
+  <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+</head>
+<body>
+  <div class="container">
+    <div id="app">
+      <div class='row'>
+        <h4>Amount of Resources Found</h4>
+      </div>
+      <div class='row'>
+        <div class='col-md-2'>Skill Level</div>
+        <div class='col-md-2'>Efficiency Level</div>
+        <div class='col-md-2'>Resource% Level</div>
+        <div class='col-md-1'>Tier 1</div>
+        <div class='col-md-1'>Tier 2</div>
+        <div class='col-md-1'>Tier 3</div>
+        <div class='col-md-1'>Tier 4</div>
+        <div class='col-md-1'>Tier 5</div>
+      </div>
+      <div class='row'>
+        <div class='col-md-2'>
+          <input type="number" class="form-control" id="tsLevel" placeholder="0" value='10' />
+        </div>
+        <div class='col-md-2'>
+          <input type="number" class="form-control" id="weLevel" placeholder="0" value='10' />
+        </div>
+        <div class='col-md-2'>
+          <input type="number" class="form-control" id="resLevel" placeholder="0" value='10' />
+        </div>
+        <div id='tsTier1' class='col-md-1'>0</div>
+        <div id='tsTier2' class='col-md-1'>0</div>
+        <div id='tsTier3' class='col-md-1'>0</div>
+        <div id='tsTier4' class='col-md-1'>0</div>
+        <div id='tsTier5' class='col-md-1'>0</div>
+      </div>
+    </div>
+  </div>
+
+
+  <script src="https://code.jquery.com/jquery-2.2.3.min.js" integrity="sha256-a23g1Nt4dtEYOj7bR+vTu7+T8VP13humZFBJNIYoEJo=" crossorigin="anonymous"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.11.1/lodash.min.js"></script>
+  <script>
+$('#tsLevel').change(function(e) {
+  recalculate();
+});
+$('#weLevel').change(function(e) {
+  recalculate();
+});
+$('#resLevel').change(function(e) {
+  recalculate();
+});
+
+function recalculate() {
+  var tsLevel = parseInt($('#tsLevel').val());
+  var weLevel = parseInt($('#weLevel').val());
+  var resLevel = parseInt($('#resLevel').val());
+
+  var t1 = (tsLevel+weLevel)/100+1+resLevel/100;
+  var t2 = t1 * 7/9;
+  var t3 = t1 * 6/9;
+  var t4 = t1 * 5/9;
+  var t5 = t1 * 4/9;
+  //console.info(tsLevel, weLevel, resLevel, t1, t2, t3, t4, t5);
+
+  $('#tsTier1').text(t1.toFixed(2));
+  $('#tsTier2').text(t2.toFixed(2));
+  $('#tsTier3').text(t3.toFixed(2));
+  $('#tsTier4').text(t4.toFixed(2));
+  $('#tsTier5').text(t5.toFixed(2));
+}
+
+recalculate();
+  </script>
+</body>
+</html>
