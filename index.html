@@ -148,7 +148,7 @@ function recalculateEnchanting() {
   var totalXp = _.sum(_.range(curLevel+1, tgtLevel+1)) * 100;
   var totalAttempts = totalXp / (xpSuccess + xpRemove);
   var totalME = totalAttempts * (meSuccess - meRemove);
-  console.info(curLevel+1, tgtLevel+1, totalXp, xpSuccess, xpRemove, meSuccess, meRemove);
+  //console.info(curLevel+1, tgtLevel+1, totalXp, xpSuccess, xpRemove, meSuccess, meRemove);
   $('#enchMEUsed').text(totalME.toFixed(2));
   $('#enchTotalEnchants').text(totalAttempts.toFixed(2));
   $('#enchXPRequired').text(totalXp.toFixed(2));
