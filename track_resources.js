@@ -67,6 +67,8 @@ function parseTSLog(datum) {
 			itemTypes = tsResults.plant.items;
 		} else if(msg.indexOf('You caught') >= 0) {
 			itemTypes = tsResults.fish.items;
+		} else {
+			itemTypes = [];
 		}
 
 		for(var i=0,iLen=itemTypes.length;i<iLen;i++) {
