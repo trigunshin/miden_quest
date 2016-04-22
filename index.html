@@ -129,24 +129,13 @@ function recalculateTradeskill() {
 recalculateTradeskill();
 
 // Enchanting handlers
-$('#enchCurrentLevel').change(function(e) {
-  recalculateEnchanting();
+var enchantChangeMonitors = ['#enchCurrentLevel', '#enchTargetLevel', '#enchXPSuccess', '#enchXPRemove', '#enchMESuccess', '#enchMERemove'];
+_.each(enchantChangeMonitors, function(el_id) {
+  $(el_id).change(function(e) {
+    recalculateEnchanting();
+  });
 });
-$('#enchTargetLevel').change(function(e) {
-  recalculateEnchanting();
-});
-$('#enchXPSuccess').change(function(e) {
-  recalculateEnchanting();
-});
-$('#enchXPRemove').change(function(e) {
-  recalculateEnchanting();
-});
-$('#enchMESuccess').change(function(e) {
-  recalculateEnchanting();
-});
-$('#enchMERemove').change(function(e) {
-  recalculateEnchanting();
-});
+
 function recalculateEnchanting() {
   var curLevel = parseInt($('#enchCurrentLevel').val());
   var tgtLevel = parseInt($('#enchTargetLevel').val());
@@ -165,6 +154,5 @@ function recalculateEnchanting() {
 };
 recalculateEnchanting();
   </script>
-}
 </body>
 </html>
