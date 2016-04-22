@@ -24,9 +24,10 @@
         <h4>Amount of Resources Found</h4>
       </div>
       <div class='row'>
-        <div class='col-md-2'>Skill Level</div>
-        <div class='col-md-2'>Work Efficiency Level</div>
-        <div class='col-md-2'>Resource% Level</div>
+        <div class='col-md-1'>Skill Level</div>
+        <div class='col-md-1'>Work Efficiency</div>
+        <div class='col-md-1'>Resource%</div>
+        <div class='col-md-1'>Kingdom Bonus %</div>
         <div class='col-md-1'>Tier 1</div>
         <div class='col-md-1'>Tier 2</div>
         <div class='col-md-1'>Tier 3</div>
@@ -34,14 +35,17 @@
         <div class='col-md-1'>Tier 5</div>
       </div>
       <div class='row'>
-        <div class='col-md-2'>
+        <div class='col-md-1'>
           <input type="number" class="form-control" id="tsLevel" placeholder="0" value='10' />
         </div>
-        <div class='col-md-2'>
+        <div class='col-md-1'>
           <input type="number" class="form-control" id="weLevel" placeholder="0" value='10' />
         </div>
-        <div class='col-md-2'>
+        <div class='col-md-1'>
           <input type="number" class="form-control" id="resLevel" placeholder="0" value='10' />
+        </div>
+        <div class='col-md-1'>
+          <input type="number" class="form-control" id="kingdomLevel" placeholder="0" value='0' />
         </div>
         <div id='tsTier1' class='col-md-1'>0</div>
         <div id='tsTier2' class='col-md-1'>0</div>
@@ -97,27 +101,24 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.11.1/lodash.min.js"></script>
   <script>
 // Tradeskill handlers
-$('#tsLevel').change(function(e) {
-  recalculateTradeskill();
-});
-$('#weLevel').change(function(e) {
-  recalculateTradeskill();
-});
-$('#resLevel').change(function(e) {
-  recalculateTradeskill();
+var tsChangeMonitors = ['#tsLevel', '#weLevel', '#resLevel', '#kingdomLevel'];
+_.each(tsChangeMonitors, function(el_id) {
+  $(el_id).change(function(e) {
+    recalculateTradeskill();
+  });
 });
 
 function recalculateTradeskill() {
   var tsLevel = parseInt($('#tsLevel').val());
   var weLevel = parseInt($('#weLevel').val());
   var resLevel = parseInt($('#resLevel').val());
-
-  var t1 = (tsLevel+weLevel)/100+1+resLevel/100;
+  var kingdomLevel = parseInt($('#kingdomLevel').val());
+  var t1 = (tsLevel+weLevel+kingdomLevel+resLevel)/100+1;
   var t2 = t1 * 7/9;
   var t3 = t1 * 6/9;
   var t4 = t1 * 5/9;
   var t5 = t1 * 4/9;
-  //console.info(tsLevel, weLevel, resLevel, t1, t2, t3, t4, t5);
+  //console.info(tsLevel, weLevel, resLevel, kingdomLevel, t1, t2, t3, t4, t5);
 
   $('#tsTier1').text(t1.toFixed(2));
   $('#tsTier2').text(t2.toFixed(2));
