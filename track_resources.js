@@ -7,17 +7,16 @@ exact values, and you should probably wait for 300-500+ attempts on a tile to dr
 To reset the values (necessary if you move tiles) you can copy/paste the whole script again or just enter
 this into the console:  "clearTSResults();".
 
-THIS IS PROBABLY (100%) NOT COMPATIBLE WITH RYALANE'S CHAT SCRIPT
+This *should* be compatible with Ryalane's script if Ryalane's script loads first.
 //*/
 
-// set up handler array & hook game's handler in
-var eventHandlers = [ServerReceptionHandler];
-function onmsg(evt) {
-	for(var i=0,iLen=eventHandlers.length; i<iLen;i++) {
-		eventHandlers[i](evt.data);
-	}
+// set up handler & hook original game handler in
+var track_resources_original_msg = ws.onmessage;
+function track_resources_onmsg(evt) {
+	track_resources_original_msg(evt);
+	parseTSLog(evt.data);
 };
-ws.onmessage=onmsg;
+ws.onmessage=track_resources_onmsg;
 
 // results aren't stored under the resource because we aren't tracking tile changes/types
 var tsResults = {
@@ -87,4 +86,3 @@ function parseTSLog(datum) {
 			'\tmsg:', msg);
 	}
 }
-eventHandlers.push(parseTSLog);
