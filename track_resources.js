@@ -21,6 +21,7 @@ ws.onmessage=track_resources_onmsg;
 // results aren't stored under the resource because we aren't tracking tile changes/types
 var tsResults = {
 	actions:0,
+	items: 0,
 	1: 0,
 	2: 0,
 	3: 0,
@@ -52,9 +53,11 @@ function parseTSLog(datum) {
 	var channel = arr[1];
 	var msg = arr[2];
 	
-	// skip relic, item, gem drops
-	if(channel == 3) return;
-	else if(channel == 2) {
+	// track relic, item, gem, gold drops
+	if(channel == 3) {
+		tsResults.items += 1;
+		return;
+	} else if(channel == 2) {
 		tsResults.actions += 1;
 		// which array should be used?
 		var itemTypes = null;
@@ -82,6 +85,7 @@ function parseTSLog(datum) {
 			't3:', (100*tsResults[3]/tsResults.actions).toFixed(2),
 			't4:', (100*tsResults[4]/tsResults.actions).toFixed(2),
 			't5:', (100*tsResults[5]/tsResults.actions).toFixed(2),
+			'items:', (100*tsResults.items/tsResults.actions).toFixed(2),
 			'actions:', tsResults.actions,
 			'\tmsg:', msg);
 	}
