@@ -10,14 +10,6 @@ this into the console:  "clearTSResults();".
 This *should* be compatible with Ryalane's script if Ryalane's script loads first.
 //*/
 
-// set up handler & hook original game handler in
-var track_resources_original_msg = ws.onmessage;
-function track_resources_onmsg(evt) {
-	track_resources_original_msg(evt);
-	parseTSLog(evt.data);
-};
-ws.onmessage=track_resources_onmsg;
-
 // results aren't stored under the resource because we aren't tracking tile changes/types
 var tsResults = {
 	actions:0,
@@ -91,4 +83,16 @@ function parseTSLog(datum) {
 			'actions:', tsResults.actions,
 			'\tmsg:', msg);
 	}
+}
+function track_resources_onmsg(evt) {
+	track_resources_original_msg(evt);
+	parseTSLog(evt.data);
+}
+// set up handler & hook original game handler in
+if(typeof track_resources_original_msg === 'undefined') {
+	console.info('not loaded');
+	var track_resources_original_msg = ws.onmessage;
+	ws.onmessage=track_resources_onmsg;
+} else {
+	ws.onmessage=track_resources_onmsg;
 }
