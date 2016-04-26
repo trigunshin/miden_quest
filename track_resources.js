@@ -34,6 +34,7 @@ var tsResults = {
 };
 function clearTSResults() {
 	tsResults.actions = 0;
+	tsResults.items = 0;
 	for(var i=1, iLen=6; i<iLen;i++) {
 		tsResults[i] = 0;
 	}
