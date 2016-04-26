@@ -55,6 +55,8 @@ function parseTSLog(datum) {
 	
 	// track relic, item, gem, gold drops
 	if(channel == 3) {
+		// skip quest drops
+		if(msg.indexOf('quest') > 0) return;
 		tsResults.items += 1;
 		return;
 	} else if(channel == 2) {
