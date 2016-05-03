@@ -92,6 +92,43 @@
         <div id='enchTotalEnchants' class='col-md-1'>0</div>
         <div id='enchMEUsed' class='col-md-1'>0</div>
       </div>
+
+      <!-- drops component -->
+      <div class='row'>
+        <h4>Drop Information</h4><h6>Formula not guaranteed to be perfect</h6>
+      </div>
+      <div class='row'>
+        <div class='col-md-1'>TS Drop Rate %</div>
+        <div class='col-md-1'>Sec/Attempt</div>
+        <div class='col-md-1'>Relic %</div>
+        <div class='col-md-1'>Gem %</div>
+        <div class='col-md-1'>Hours</div>
+        <div class='col-md-1'>Drop Rate</div>
+        <div class='col-md-1'>Hourly Attempts</div>
+        <div class='col-md-1'>Hourly Drops</div>
+        <div class='col-md-1'>Total Drops</div>
+      </div>
+      <div class='row'>
+        <div class='col-md-1'>
+          <input type="number" class="form-control" id="tsDropRate" placeholder="1" value='1' />
+        </div>
+        <div class='col-md-1'>
+          <input type="number" class="form-control" id="tsSecondsPer" placeholder="10" value='5' />
+        </div>
+        <div class='col-md-1'>
+          <input type="number" class="form-control" id="relicDropRate" placeholder="5" value='10' />
+        </div>
+        <div class='col-md-1'>
+          <input type="number" class="form-control" id="gemDropRate" placeholder="5" value='10' />
+        </div>
+        <div class='col-md-1'>
+          <input type="number" class="form-control" id="hoursFarming" placeholder="0" value='1' />
+        </div>
+        <div id='totalDropRate' class='col-md-1'>0</div>
+        <div id='dropHourlyAttempts' class='col-md-1'>0</div>
+        <div id='hourlyDrops' class='col-md-1'>0</div>
+        <div id='totalDrops' class='col-md-1'>0</div>
+      </div>
     </div>
   </div>
 
@@ -153,6 +190,37 @@ function recalculateEnchanting() {
   $('#enchXPRequired').text(totalXp.toFixed(2));
 };
 recalculateEnchanting();
+
+// Drop handlers
+var dropChangeMonitors = ['#tsDropRate', '#tsSecondsPer', '#relicDropRate', '#gemDropRate', '#hoursFarming'];
+_.each(dropChangeMonitors, function(el_id) {
+  $(el_id).change(function(e) {
+    recalculateDrops();
+  });
+});
+
+function recalculateDrops() {
+  var tsRate = parseInt($('#tsDropRate').val());
+  var secondsPer = parseInt($('#tsSecondsPer').val());
+  var relicRate = parseInt($('#relicDropRate').val());
+  var gemRate = parseInt($('#gemDropRate').val());
+  var hours = parseInt($('#hoursFarming').val());
+
+  var seconds = 60*60;
+
+  var totalRate = (tsRate/100) * (1 + gemRate/100) * (1 + relicRate/100);
+  var hourlyAttempts = seconds / secondsPer;
+  var hourlyDrops = hourlyAttempts * totalRate;
+
+  var totalDrops = hourlyDrops * hours;
+  //console.info(totalRate, hourlyAttempts, hourlyDrops, totalDrops);
+
+  $('#totalDropRate').text(totalRate.toFixed(4));
+  $('#dropHourlyAttempts').text(hourlyAttempts.toFixed(0));
+  $('#hourlyDrops').text(hourlyDrops.toFixed(2));
+  $('#totalDrops').text(totalDrops.toFixed(2));
+};
+recalculateDrops();
   </script>
 </body>
 </html>
