@@ -200,7 +200,7 @@ _.each(dropChangeMonitors, function(el_id) {
 });
 
 function recalculateDrops() {
-  var tsRate = parseInt($('#tsDropRate').val());
+  var tsRate = parseFloat($('#tsDropRate').val());
   var secondsPer = parseInt($('#tsSecondsPer').val());
   var relicRate = parseInt($('#relicDropRate').val());
   var gemRate = parseInt($('#gemDropRate').val());
