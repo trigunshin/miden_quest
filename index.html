@@ -135,12 +135,28 @@
         <h4>Relics Spent</h4><h6>Put in the single upgrade cost</h6>
       </div>
       <div class='row'>
-        <div class='col-md-1'>Single Upgrade Cost</div>
-        <div class='col-md-1'>Relics Spent</div>
+        <div class='col-md-1'>Exp Cost</div>
+        <div class='col-md-1'>Res % Cost</div>
+        <div class='col-md-1'>Workload Cost</div>
+        <div class='col-md-1'>Drop % Cost</div>
+        <div class='col-md-1'>Res Luck % Cost</div>
+        <div class='col-md-1'>Total Relics Spent</div>
       </div>
       <div class='row'>
         <div class='col-md-1'>
-          <input type="number" class="form-control" id="singleRelicCost" placeholder="1" value='1' />
+          <input type="number" class="form-control" id="expRelicCost" placeholder="1" value='0' />
+        </div>
+        <div class='col-md-1'>
+          <input type="number" class="form-control" id="resourceRelicCost" placeholder="1" value='0' />
+        </div>
+        <div class='col-md-1'>
+          <input type="number" class="form-control" id="workloadRelicCost" placeholder="1" value='0' />
+        </div>
+        <div class='col-md-1'>
+          <input type="number" class="form-control" id="dropRelicCost" placeholder="1" value='0' />
+        </div>
+        <div class='col-md-1'>
+          <input type="number" class="form-control" id="luckRelicCost" placeholder="1" value='0' />
         </div>
         <div id='totalRelicsSpent' class='col-md-1'>0</div>
       </div>
@@ -238,7 +254,7 @@ function recalculateDrops() {
 recalculateDrops();
 
 // Relic handlers
-var relicChangeMonitors = ['#singleRelicCost'];
+var relicChangeMonitors = ['#expRelicCost', '#resourceRelicCost', '#workloadRelicCost', '#dropRelicCost', '#luckRelicCost'];
 _.each(relicChangeMonitors, function(el_id) {
   $(el_id).change(function(e) {
     recalculateRelics();
@@ -246,8 +262,11 @@ _.each(relicChangeMonitors, function(el_id) {
 });
 
 function recalculateRelics() {
-  var spent = parseInt($('#singleRelicCost').val());
-  var totalSpent = spent  * (spent - 1) / 2;
+  var totalSpent = _.sum(_.map(relicChangeMonitors, function(el_id) {
+    var spent = parseInt($(el_id).val());
+    return spent  * (spent - 1) / 2;
+  }));
+
   $('#totalRelicsSpent').text(totalSpent.toFixed(1));
 };
 recalculateRelics();
