@@ -129,6 +129,21 @@
         <div id='hourlyDrops' class='col-md-1'>0</div>
         <div id='totalDrops' class='col-md-1'>0</div>
       </div>
+
+      <!-- Relics Spent component -->
+      <div class='row'>
+        <h4>Relics Spent</h4><h6>Put in the single upgrade cost</h6>
+      </div>
+      <div class='row'>
+        <div class='col-md-1'>Single Upgrade Cost</div>
+        <div class='col-md-1'>Relics Spent</div>
+      </div>
+      <div class='row'>
+        <div class='col-md-1'>
+          <input type="number" class="form-control" id="singleRelicCost" placeholder="1" value='1' />
+        </div>
+        <div id='totalRelicsSpent' class='col-md-1'>0</div>
+      </div>
     </div>
   </div>
 
@@ -221,6 +236,21 @@ function recalculateDrops() {
   $('#totalDrops').text(totalDrops.toFixed(2));
 };
 recalculateDrops();
+
+// Relic handlers
+var relicChangeMonitors = ['#singleRelicCost'];
+_.each(relicChangeMonitors, function(el_id) {
+  $(el_id).change(function(e) {
+    recalculateRelics();
+  });
+});
+
+function recalculateRelics() {
+  var spent = parseInt($('#singleRelicCost').val());
+  var totalSpent = spent  * (spent - 1) / 2;
+  $('#totalRelicsSpent').text(totalSpent.toFixed(1));
+};
+recalculateRelics();
   </script>
 </body>
 </html>
