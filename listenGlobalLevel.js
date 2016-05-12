@@ -9,7 +9,7 @@ function trackGlobalLevelOnMsg(evt) {
 }
 // set up handler & hook original game handler in
 if(typeof track_global_original_msg === 'undefined') {
-    console.info('marketAlerts not yet loaded, loading...');
+    console.info('trackGlobal not yet loaded, loading...');
     var track_global_original_msg = ws.onmessage;
     ws.onmessage=trackGlobalLevelOnMsg;
 } else {
