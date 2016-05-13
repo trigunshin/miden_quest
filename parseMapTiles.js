@@ -43,11 +43,11 @@ function parseNode(node) {
 }
 function isGoodNode(node) {
     ret = true;
-    if(node.t1) ret = ret && node.t1 >= 70;
-    if(node.t2) ret = ret && node.t2 >= 50;
-    if(node.t3) ret = ret && node.t3 >= 25;
-    if(node.t4) ret = ret && node.t4 >= 11;
-    if(node.t5) ret = ret && node.t5 >= 4;
+    if(node.t1) ret = ret && node.t1 >= T1_CUTOFF;
+    if(node.t2) ret = ret && node.t2 >= T2_CUTOFF;
+    if(node.t3) ret = ret && node.t3 >= T3_CUTOFF;
+    if(node.t4) ret = ret && node.t4 >= T4_CUTOFF;
+    if(node.t5) ret = ret && node.t5 >= T5_CUTOFF;
     return ret;
 }
 function parseMap() {
