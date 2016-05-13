@@ -239,7 +239,7 @@ function recalculateDrops() {
 
   var seconds = 60*60;
 
-  var totalRate = (tsRate/100) * (1 + gemRate/100) * (1 + relicRate/100);
+  var totalRate = (tsRate/100) * (1 + (gemRate+relicRate)/100);
   var hourlyAttempts = seconds / secondsPer;
   var hourlyDrops = hourlyAttempts * totalRate;
 
