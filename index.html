@@ -181,7 +181,7 @@ function recalculateTradeskill() {
   var weLevel = parseInt($('#weLevel').val());
   var resLevel = parseInt($('#resLevel').val());
   var kingdomLevel = parseInt($('#kingdomLevel').val());
-  var t1 = (tsLevel+weLevel+kingdomLevel+resLevel)/100+1;
+  var t1 = ((tsLevel+weLevel+resLevel)/100+1)*(1+kingdomLevel/100);
   var t2 = t1 * 7/9;
   var t3 = t1 * 6/9;
   var t4 = t1 * 5/9;
