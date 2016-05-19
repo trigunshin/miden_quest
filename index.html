@@ -161,6 +161,34 @@
         <div id='totalRelicsSpent' class='col-md-1'>0</div>
       </div>
     </div>
+
+    <!-- Luck component -->
+      <div class='row'>
+        <h4>Resource Luck</h4><h6>Minor rounding differences will occur</h6>
+      </div>
+      <div class='row'>
+        <div class='col-md-1'>Personal Luck</div>
+        <div class='col-md-1'>Kingdom Luck</div>
+        <div class='col-md-1'>Tier 1</div>
+        <div class='col-md-1'>Tier 2</div>
+        <div class='col-md-1'>Tier 3</div>
+        <div class='col-md-1'>Tier 4</div>
+        <div class='col-md-1'>Tier 5</div>
+      </div>
+      <div class='row'>
+        <div class='col-md-1'>
+          <input type="number" class="form-control" id="luckPersonal" placeholder="1" value='0' />
+        </div>
+        <div class='col-md-1'>
+          <input type="number" class="form-control" id="luckKingdom" placeholder="1" value='0' />
+        </div>
+        <div id='luckTier1' class='col-md-1'>0</div>
+        <div id='luckTier2' class='col-md-1'>0</div>
+        <div id='luckTier3' class='col-md-1'>0</div>
+        <div id='luckTier4' class='col-md-1'>0</div>
+        <div id='luckTier5' class='col-md-1'>0</div>
+      </div>
+    </div>
   </div>
 
 
@@ -270,6 +298,32 @@ function recalculateRelics() {
   $('#totalRelicsSpent').text(totalSpent.toFixed(1));
 };
 recalculateRelics();
+
+// Luck handlers
+var luckChangeMonitors = ['#luckKingdom', '#luckPersonal'];
+_.each(luckChangeMonitors, function(el_id) {
+  $(el_id).change(function(e) {
+    recalculateLuck();
+  });
+});
+
+function recalculateLuck() {
+  var personal = parseFloat($('#luckPersonal').val());
+  var kingdom = parseFloat($('#luckKingdom').val());
+
+  var t1 = personal + kingdom;
+  var t2 = t1 * Math.pow(2/3, 1);
+  var t3 = t1 * Math.pow(2/3, 2);
+  var t4 = t1 * Math.pow(2/3, 3);
+  var t5 = t1 * Math.pow(2/3, 4);
+
+  $('#luckTier1').text(t1.toFixed(1));
+  $('#luckTier2').text(t2.toFixed(1));
+  $('#luckTier3').text(t3.toFixed(1));
+  $('#luckTier4').text(t4.toFixed(1));
+  $('#luckTier5').text(t5.toFixed(1));
+};
+recalculateLuck();
   </script>
 </body>
 </html>
