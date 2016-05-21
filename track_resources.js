@@ -15,7 +15,7 @@ var saveLogText = false;
 var logText = [];
 var questItemRegex = /(\d+) \/ (\d+)/;
 var tsResults = {
-	actions:0,
+	actions: 0,
 	items: 0,
 	regularItems: 0,
 	scoutingItems: 0,
@@ -43,6 +43,12 @@ var tsResults = {
 function clearTSResults() {
 	tsResults.actions = 0;
 	tsResults.items = 0;
+	tsResults.regularItems = 0;
+	tsResults.scoutingItems = 0;
+	tsResults.questActive = false;
+	tsResults.questActions = 0;
+	tsResults.questItems = 0;
+
 	for(var i=1, iLen=6; i<iLen;i++) {
 		tsResults[i] = 0;
 	}
