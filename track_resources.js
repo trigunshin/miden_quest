@@ -28,7 +28,7 @@ var tsResults = {
 	4: 0,
 	5: 0,
 	lumber:{
-		items: ['Pine', 'Oak', 'Maple', 'Ironwood', 'Ygddrasil']
+		items: ['Pine', 'Oak', 'Maple', 'Ironwood', 'Yggdrasil']
 	},
 	ore: {
 		items: ['Iron', 'Silver', 'Obsidian', 'Mythril', 'Ethernium']
