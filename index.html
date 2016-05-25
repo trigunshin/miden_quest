@@ -28,6 +28,7 @@
         <div class='col-md-1'>Work Efficiency</div>
         <div class='col-md-1'>Resource%</div>
         <div class='col-md-1'>Kingdom Bonus %</div>
+        <div class='col-md-1'>Gem Bonus %</div>
         <div class='col-md-1'>Tier 1</div>
         <div class='col-md-1'>Tier 2</div>
         <div class='col-md-1'>Tier 3</div>
@@ -46,6 +47,9 @@
         </div>
         <div class='col-md-1'>
           <input type="number" class="form-control" id="kingdomLevel" placeholder="0" value='0' />
+        </div>
+        <div class='col-md-1'>
+          <input type="number" class="form-control" id="resGemLevel" placeholder="0" value='0' />
         </div>
         <div id='tsTier1' class='col-md-1'>0</div>
         <div id='tsTier2' class='col-md-1'>0</div>
@@ -197,7 +201,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.11.1/lodash.min.js"></script>
   <script>
 // Tradeskill handlers
-var tsChangeMonitors = ['#tsLevel', '#weLevel', '#resLevel', '#kingdomLevel'];
+var tsChangeMonitors = ['#tsLevel', '#weLevel', '#resLevel', '#kingdomLevel', '#resGemLevel'];
 _.each(tsChangeMonitors, function(el_id) {
   $(el_id).change(function(e) {
     recalculateTradeskill();
@@ -209,7 +213,8 @@ function recalculateTradeskill() {
   var weLevel = parseInt($('#weLevel').val());
   var resLevel = parseInt($('#resLevel').val());
   var kingdomLevel = parseInt($('#kingdomLevel').val());
-  var t1 = ((tsLevel+weLevel+resLevel)/100+1)*(1+kingdomLevel/100);
+  var resGemLevel = parseInt($('#resGemLevel').val());
+  var t1 = ((tsLevel+weLevel+resLevel)/100+1)*(1+kingdomLevel/100)*(1+resGemLevel/100);
   var t2 = t1 * 7/9;
   var t3 = t1 * 6/9;
   var t4 = t1 * 5/9;
