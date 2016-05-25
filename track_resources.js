@@ -135,21 +135,21 @@ function updateOutput(results, msg) {
 	var outputArgs = [];
 	if(outputTiers) {
 		outputArgs = outputArgs.concat([
-			't1:', (100*tsResults[1]/tsResults.actions).toFixed(2),
-			't2:', (100*tsResults[2]/tsResults.actions).toFixed(2),
-			't3:', (100*tsResults[3]/tsResults.actions).toFixed(2),
-			't4:', (100*tsResults[4]/tsResults.actions).toFixed(2),
-			't5:', (100*tsResults[5]/tsResults.actions).toFixed(2)]);
+			't1%:', (100*tsResults[1]/tsResults.actions).toFixed(2),
+			't2%:', (100*tsResults[2]/tsResults.actions).toFixed(2),
+			't3%:', (100*tsResults[3]/tsResults.actions).toFixed(2),
+			't4%:', (100*tsResults[4]/tsResults.actions).toFixed(2),
+			't5%:', (100*tsResults[5]/tsResults.actions).toFixed(2)]);
 	}
-	outputArgs = outputArgs.concat(['item:', (100*tsResults.items/tsResults.actions).toFixed(2)]);
+	outputArgs = outputArgs.concat(['item%:', (100*tsResults.items/tsResults.actions).toFixed(2)]);
 	if(outputScouting)
 		outputArgs = outputArgs.concat([
-			'regularItem:', (100*tsResults.regularItems/tsResults.actions).toFixed(2),
-			'scoutItem:', (100*tsResults.scoutingItems/tsResults.actions).toFixed(2)]);
+			'regularItem%:', (100*tsResults.regularItems/tsResults.actions).toFixed(2),
+			'scoutItem%:', (100*tsResults.scoutingItems/tsResults.actions).toFixed(2)]);
 	if(outputQuests)
-		outputArgs = outputArgs.concat(['quest:', (100*tsResults.questItems/tsResults.questActions).toFixed(2)]);
+		outputArgs = outputArgs.concat(['quest%:', (100*tsResults.questItems/tsResults.questActions).toFixed(2)]);
 	if(outputTaxes)
-		outputArgs = outputArgs.concat(['tax:', (100*tsResults.taxedActions/tsResults.actions).toFixed(2)]);
+		outputArgs = outputArgs.concat(['tax%:', (100*tsResults.taxedActions/tsResults.actions).toFixed(2)]);
 
 	outputArgs = outputArgs.concat([
 		'actions:', tsResults.actions,
@@ -173,12 +173,12 @@ function updateUI(outputArgs) {
 }
 function initializeUI() {
 	jQuery('<div/>', {
-	    id: 'resourceLogContainer',
-	    text: 'Resource Log',
-	    style: 'float: right;'
+		id: 'resourceLogContainer',
+		text: 'Resource Log',
+		style: 'float: right;'
 	}).prependTo('body');
 	jQuery('<ul/>', {
-	    id: resourceListId,
+		id: resourceListId,
 	}).appendTo('div#resourceLogContainer');
 }
 function track_resources_onmsg(evt) {
