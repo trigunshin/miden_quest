@@ -8,14 +8,25 @@ To reset the values (necessary if you move tiles) you can copy/paste the whole s
 this into the console:  "clearTSResults();".
 
 This *should* be compatible with Ryalane's script if Ryalane's script loads first.
+TODO:
+	total amount of resources gained
+	taxes
 //*/
-
-// results aren't stored under the resource because we aren't tracking tile changes/types
+// preferences; data is still tracked, this only affects output
+var outputTaxes = true;
+var outputTiers = true;
+var outputQuests = true;
+var outputScouting = true;
+var outputToConsole = false;
 var saveLogText = false;
+
 var logText = [];
 var questItemRegex = /(\d+) \/ (\d+)/;
+var resourceListId = 'resourceLogList';
+// results aren't stored under the resource because we aren't tracking tile changes/types
 var tsResults = {
 	actions: 0,
+	taxedActions: 0,
 	items: 0,
 	regularItems: 0,
 	scoutingItems: 0,
@@ -95,6 +106,7 @@ function parseTSLog(datum) {
 
 		tsResults.actions += 1;
 		if(tsResults.questActive) tsResults.questActions += 1;
+		if(msg.indexOf('to taxes') > -1) tsResults.taxedActions += 1;
 
 		// which array should be used?
 		var itemTypes = null;
@@ -116,19 +128,58 @@ function parseTSLog(datum) {
 			}
 		}
 
-		console.info(
-			't1:', (100*tsResults[1]/tsResults.actions).toFixed(2),
-			't2:', (100*tsResults[2]/tsResults.actions).toFixed(2),
-			't3:', (100*tsResults[3]/tsResults.actions).toFixed(2),
-			't4:', (100*tsResults[4]/tsResults.actions).toFixed(2),
-			't5:', (100*tsResults[5]/tsResults.actions).toFixed(2),
-			'item:', (100*tsResults.items/tsResults.actions).toFixed(2),
-			'regularItem:', (100*tsResults.regularItems/tsResults.actions).toFixed(2),
-			'scoutItem:', (100*tsResults.scoutingItems/tsResults.actions).toFixed(2),
-			'quest:', (100*tsResults.questItems/tsResults.questActions).toFixed(2),
-			'actions:', tsResults.actions,
-			'\tmsg:', msg);
+		updateOutput(tsResults, msg);
 	}
+}
+function updateOutput(results, msg) {
+	var outputArgs = [];
+	if(outputTiers) {
+		outputArgs = outputArgs.concat([
+			't1%:', (100*tsResults[1]/tsResults.actions).toFixed(2),
+			't2%:', (100*tsResults[2]/tsResults.actions).toFixed(2),
+			't3%:', (100*tsResults[3]/tsResults.actions).toFixed(2),
+			't4%:', (100*tsResults[4]/tsResults.actions).toFixed(2),
+			't5%:', (100*tsResults[5]/tsResults.actions).toFixed(2)]);
+	}
+	outputArgs = outputArgs.concat(['item%:', (100*tsResults.items/tsResults.actions).toFixed(2)]);
+	if(outputScouting)
+		outputArgs = outputArgs.concat([
+			'regularItem%:', (100*tsResults.regularItems/tsResults.actions).toFixed(2),
+			'scoutItem%:', (100*tsResults.scoutingItems/tsResults.actions).toFixed(2)]);
+	if(outputQuests)
+		outputArgs = outputArgs.concat(['quest%:', (100*tsResults.questItems/tsResults.questActions).toFixed(2)]);
+	if(outputTaxes)
+		outputArgs = outputArgs.concat(['tax%:', (100*tsResults.taxedActions/tsResults.actions).toFixed(2)]);
+
+	outputArgs = outputArgs.concat([
+		'actions:', tsResults.actions,
+		'\tmsg:', msg]);
+
+	if(outputToConsole) console.info.apply(console, outputArgs);
+
+	// skip posting the message to the UI
+	outputArgs.pop();
+	outputArgs.pop();
+	updateUI(outputArgs);
+}
+function formatResource(label, value) {
+	return '<li><div>' + label + ' ' + value + '</div></li>';
+}
+function updateUI(outputArgs) {
+	$('#'+resourceListId).empty();
+	for(var i=0,iLen=outputArgs.length;i<iLen;i+=2) {
+		$('#'+resourceListId).append(formatResource(outputArgs[i], outputArgs[i+1]));
+	}
+}
+function initializeUI() {
+	jQuery('<div/>', {
+		id: 'resourceLogContainer',
+		text: 'Resource Log',
+		style: 'float: right;'
+	}).prependTo('body');
+	jQuery('<ul/>', {
+		id: resourceListId,
+	}).appendTo('div#resourceLogContainer');
 }
 function track_resources_onmsg(evt) {
 	track_resources_original_msg(evt);
@@ -139,6 +190,7 @@ if(typeof track_resources_original_msg === 'undefined') {
 	console.info('resource tracker not yet loaded, loading...');
 	var track_resources_original_msg = ws.onmessage;
 	ws.onmessage=track_resources_onmsg;
+	initializeUI();
 } else {
 	ws.onmessage=track_resources_onmsg;
 }
