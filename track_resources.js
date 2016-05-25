@@ -13,10 +13,11 @@ TODO:
 	taxes
 //*/
 // preferences; data is still tracked, this only affects output
-var outputToConsole = false;
+var outputTaxes = true;
 var outputTiers = true;
 var outputQuests = true;
-var outputScouting = false;
+var outputScouting = true;
+var outputToConsole = false;
 var saveLogText = false;
 
 var logText = [];
@@ -25,6 +26,7 @@ var resourceListId = 'resourceLogList';
 // results aren't stored under the resource because we aren't tracking tile changes/types
 var tsResults = {
 	actions: 0,
+	taxedActions: 0,
 	items: 0,
 	regularItems: 0,
 	scoutingItems: 0,
@@ -104,6 +106,7 @@ function parseTSLog(datum) {
 
 		tsResults.actions += 1;
 		if(tsResults.questActive) tsResults.questActions += 1;
+		if(msg.indexOf('to taxes') > -1) tsResults.taxedActions += 1;
 
 		// which array should be used?
 		var itemTypes = null;
@@ -145,6 +148,8 @@ function updateOutput(results, msg) {
 			'scoutItem:', (100*tsResults.scoutingItems/tsResults.actions).toFixed(2)]);
 	if(outputQuests)
 		outputArgs = outputArgs.concat(['quest:', (100*tsResults.questItems/tsResults.questActions).toFixed(2)]);
+	if(outputTaxes)
+		outputArgs = outputArgs.concat(['tax:', (100*tsResults.taxedActions/tsResults.actions).toFixed(2)]);
 
 	outputArgs = outputArgs.concat([
 		'actions:', tsResults.actions,
