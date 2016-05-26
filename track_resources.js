@@ -74,7 +74,18 @@ function clearTSResults() {
 	tsResults.questActions = 0;
 	tsResults.questItems = 0;
 	tsResults.taxedActions = 0;
-	tsResults.itemInfo = {};
+	tsResults.itemInfo = {
+		equipDrop: 0,
+		resourceBagDrop: 0,
+		keyDrop: 0,
+		magicElementsDrop: 0,
+		magicElementsTotal: 0,
+		goldDrop: 0,
+		goldTotal: 0,
+		gemDrop: 0,
+		relicDrop: 0,
+		relicTotal: 0
+	};
 
 	for(var i=1, iLen=6; i<iLen;i++) {
 		tsResults[i] = 0;
@@ -179,45 +190,54 @@ function parseTSLog(datum) {
 		updateOutput(tsResults, msg);
 	}
 }
-function updateOutput(results, msg) {
-	// TODO make each subsection its own function for readability
-	var outputArgs = [];
-	if(outputTiers) {
-		outputArgs = outputArgs.concat([
-			't1%:', (100*tsResults[1]/tsResults.actions).toFixed(2),
-			't2%:', (100*tsResults[2]/tsResults.actions).toFixed(2),
-			't3%:', (100*tsResults[3]/tsResults.actions).toFixed(2),
-			't4%:', (100*tsResults[4]/tsResults.actions).toFixed(2),
-			't5%:', (100*tsResults[5]/tsResults.actions).toFixed(2)]);
-	}
-	outputArgs = outputArgs.concat(['item%:', (100*tsResults.items/tsResults.actions).toFixed(2)]);
-	if(outputScouting)
-		outputArgs = outputArgs.concat([
-			'regularItem%:', (100*tsResults.regularItems/tsResults.actions).toFixed(2),
-			'scoutItem%:', (100*tsResults.scoutingItems/tsResults.actions).toFixed(2)]);
-	if(outputItems) {
-		outputArgs = outputArgs.concat([
-			'equip%:', (100*tsResults.itemInfo.equipDrop/tsResults.actions).toFixed(4),
-			'res. bag%:', (100*tsResults.itemInfo.resourceBagDrop/tsResults.actions).toFixed(4),
-			'key%:', (100*tsResults.itemInfo.keyDrop/tsResults.actions).toFixed(4),
-			'gem%:', (100*tsResults.itemInfo.gemDrop/tsResults.actions).toFixed(4),
-			'ME%:', (100*tsResults.itemInfo.magicElementsDrop/tsResults.actions).toFixed(4),
-			'gold%:', (100*tsResults.itemInfo.goldDrop/tsResults.actions).toFixed(4),
-			'relic%:', (100*tsResults.itemInfo.relicDrop/tsResults.actions).toFixed(4),
+function addTierInfo(tsResults, outputArgs) {
+	return outputArgs.concat([
+		't1%:', (100*tsResults[1]/tsResults.actions).toFixed(2),
+		't2%:', (100*tsResults[2]/tsResults.actions).toFixed(2),
+		't3%:', (100*tsResults[3]/tsResults.actions).toFixed(2),
+		't4%:', (100*tsResults[4]/tsResults.actions).toFixed(2),
+		't5%:', (100*tsResults[5]/tsResults.actions).toFixed(2)],
+		'&nbsp;', '&nbsp;');
+}
+function addScoutingInfo(tsResults, outputArgs) {
+	return outputArgs.concat([
+		'regularItem%:', (100*tsResults.regularItems/tsResults.actions).toFixed(2),
+		'scoutItem%:', (100*tsResults.scoutingItems/tsResults.actions).toFixed(2)]);
+}
+function addItemOutput(tsResults, outputArgs) {
+	return outputArgs.concat([
+		'&nbsp;', '&nbsp;',
+		'equip%:', (100*tsResults.itemInfo.equipDrop/tsResults.actions).toFixed(4),
+		'res. bag%:', (100*tsResults.itemInfo.resourceBagDrop/tsResults.actions).toFixed(4),
+		'key%:', (100*tsResults.itemInfo.keyDrop/tsResults.actions).toFixed(4),
+		'gem%:', (100*tsResults.itemInfo.gemDrop/tsResults.actions).toFixed(4),
+		'ME%:', (100*tsResults.itemInfo.magicElementsDrop/tsResults.actions).toFixed(4),
+		'gold%:', (100*tsResults.itemInfo.goldDrop/tsResults.actions).toFixed(4),
+		'relic%:', (100*tsResults.itemInfo.relicDrop/tsResults.actions).toFixed(4),
 
-			'avg ME:', (tsResults.itemInfo.magicElementsTotal/tsResults.itemInfo.magicElementsDrop).toFixed(2),
-			'avg Gold:', (tsResults.itemInfo.goldTotal/tsResults.itemInfo.goldDrop).toFixed(2),
-			'avg Relics:', (tsResults.itemInfo.relicTotal/tsResults.itemInfo.relicDrop).toFixed(2),
-		]);
-	}
+		'&nbsp;', '&nbsp;',
+		'avg ME:', (tsResults.itemInfo.magicElementsTotal/tsResults.itemInfo.magicElementsDrop),
+		'avg Gold:', (tsResults.itemInfo.goldTotal/tsResults.itemInfo.goldDrop),
+		'avg Relics:', (tsResults.itemInfo.relicTotal/tsResults.itemInfo.relicDrop),
+
+		'&nbsp;', '&nbsp;',
+		'Total ME:', (tsResults.itemInfo.magicElementsTotal/tsResults.itemInfo.magicElementsDrop).toFixed(2),
+		'Total Gold:', (tsResults.itemInfo.goldTotal/tsResults.itemInfo.goldDrop).toFixed(2),
+		'Total Relics:', (tsResults.itemInfo.relicTotal/tsResults.itemInfo.relicDrop).toFixed(2)],
+		'&nbsp;', '&nbsp;');
+}
+function updateOutput(results, msg) {
+	var outputArgs = ['actions:', tsResults.actions, '&nbsp;', '&nbsp;'];
+	if(outputTiers) outputArgs = addTierInfo(tsResults, outputArgs);
+	outputArgs = outputArgs.concat(['item%:', (100*tsResults.items/tsResults.actions).toFixed(2)]);
+	if(outputScouting) outputArgs = addScoutingInfo(tsResults, outputArgs);
+	if(outputItems) outputArgs = addItemOutput(tsResults, outputArgs);
 	if(outputQuests)
 		outputArgs = outputArgs.concat(['quest%:', (100*tsResults.questItems/tsResults.questActions).toFixed(2)]);
 	if(outputTaxes)
 		outputArgs = outputArgs.concat(['tax%:', (100*tsResults.taxedActions/tsResults.actions).toFixed(2)]);
 
-	outputArgs = outputArgs.concat([
-		'actions:', tsResults.actions,
-		'\tmsg:', msg]);
+	outputArgs = outputArgs.concat(['\tmsg:', msg]);
 
 	if(outputToConsole) console.info.apply(console, outputArgs);
 
