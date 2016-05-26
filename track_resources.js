@@ -1,3 +1,15 @@
+// ==UserScript==
+// @name MQO Resource Tracker
+// @namespace https://github.com/trigunshin/miden_quest
+// @description MQO resource tracker; need to run clearTSResults() to reset tile% after moving
+// @homepage https://trigunshin.github.com/miden_quest
+// @version 1
+// @downloadURL http://trigunshin.github.io/miden_quest/track_resources.js
+// @updateURL http://trigunshin.github.io/miden_quest/track_resources.js
+// @include http://www.midenquest.com/Game.aspx
+// @include https://www.midenquest.com/Game.aspx
+// ==/UserScript==
+
 /*
 INSTRUCTIONS
 Copy/paste this whole section into console & hit enter. It should track gather rates (%) for Gathering, Fishing,
@@ -216,15 +228,15 @@ function addItemOutput(tsResults, outputArgs) {
 		'relic%:', (100*tsResults.itemInfo.relicDrop/tsResults.actions).toFixed(4),
 
 		'&nbsp;', '&nbsp;',
-		'avg ME:', (tsResults.itemInfo.magicElementsTotal/tsResults.itemInfo.magicElementsDrop),
-		'avg Gold:', (tsResults.itemInfo.goldTotal/tsResults.itemInfo.goldDrop),
-		'avg Relics:', (tsResults.itemInfo.relicTotal/tsResults.itemInfo.relicDrop),
+		'avg ME:', (tsResults.itemInfo.magicElementsTotal/tsResults.itemInfo.magicElementsDrop).toFixed(2),
+		'avg Gold:', (tsResults.itemInfo.goldTotal/tsResults.itemInfo.goldDrop).toFixed(2),
+		'avg Relics:', (tsResults.itemInfo.relicTotal/tsResults.itemInfo.relicDrop).toFixed(2),
 
 		'&nbsp;', '&nbsp;',
-		'Total ME:', (tsResults.itemInfo.magicElementsTotal/tsResults.itemInfo.magicElementsDrop).toFixed(2),
-		'Total Gold:', (tsResults.itemInfo.goldTotal/tsResults.itemInfo.goldDrop).toFixed(2),
-		'Total Relics:', (tsResults.itemInfo.relicTotal/tsResults.itemInfo.relicDrop).toFixed(2)],
-		'&nbsp;', '&nbsp;');
+		'Total ME:', tsResults.itemInfo.magicElementsTotal,
+		'Total Gold:', tsResults.itemInfo.goldTotal,
+		'Total Relics:', tsResults.itemInfo.relicTotal,
+		'&nbsp;', '&nbsp;']);
 }
 function updateOutput(results, msg) {
 	var outputArgs = ['actions:', tsResults.actions, '&nbsp;', '&nbsp;'];
