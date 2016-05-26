@@ -8,10 +8,10 @@ Once T1-5 nodes are set click "Print Data". This will output a JSON blob of the 
 then a tile per line of the data. To avoid large amounts of output, I recommend parsing at least up to T3.
 //*/
 var T1_CUTOFF = 70;
-var T2_CUTOFF = 50;
-var T3_CUTOFF = 25;
-var T4_CUTOFF = 11;
-var T5_CUTOFF = 4;
+var T2_CUTOFF = 55;
+var T3_CUTOFF = 28;
+var T4_CUTOFF = 15;
+var T5_CUTOFF = 5;
 var coordPattern = /x(\d+)y(\d+)/;
 var tierPattern = /(\d+)%/;
 var typePattern = /tile-(\w+)/;
