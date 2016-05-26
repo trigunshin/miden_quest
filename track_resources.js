@@ -13,10 +13,12 @@ TODO:
 	taxes
 //*/
 // preferences; data is still tracked, this only affects output
+var outputItems = true;
 var outputTaxes = true;
 var outputTiers = true;
 var outputQuests = true;
 var outputScouting = true;
+var printItemDrops = true;
 var outputToConsole = false;
 var saveLogText = false;
 
@@ -49,6 +51,18 @@ var tsResults = {
 	},
 	fish: {
 		items: ['Tuna', 'Salmon', 'Flyfish', 'Marlin', 'Dragonfish']
+	},
+	itemInfo: {
+		equipDrop: 0,
+		resourceBagDrop: 0,
+		keyDrop: 0,
+		magicElementsDrop: 0,
+		magicElementsTotal: 0,
+		goldDrop: 0,
+		goldTotal: 0,
+		gemDrop: 0,
+		relicDrop: 0,
+		relicTotal: 0
 	}
 };
 function clearTSResults() {
@@ -59,6 +73,8 @@ function clearTSResults() {
 	tsResults.questActive = false;
 	tsResults.questActions = 0;
 	tsResults.questItems = 0;
+	tsResults.taxedActions = 0;
+	tsResults.itemInfo = {};
 
 	for(var i=1, iLen=6; i<iLen;i++) {
 		tsResults[i] = 0;
@@ -77,13 +93,45 @@ function handleQuestItem(msg) {
 		tsResults.questItems += 1;
 	}
 }
+function handleItemDrop(msg) {
+	if(printItemDrops) console.info(Date(), msg);
+
+	// TODO better method than this?
+	if(msg.indexOf('a resource bag') >= 0) tsResults.itemInfo.resourceBagDrop += 1;
+	else if(msg.indexOf('a key') >= 0) tsResults.itemInfo.keyDrop += 1;
+	else if(msg.indexOf('a gem') >= 0) tsResults.itemInfo.gemDrop += 1;
+
+	// these will eventually be broken out by tier as well
+	else if(msg.indexOf('Found Broken') >= 0) tsResults.itemInfo.equipDrop += 1;
+	else if(msg.indexOf('Found Basic') >= 0) tsResults.itemInfo.equipDrop += 1;
+	else if(msg.indexOf('Found Fine') >= 0) tsResults.itemInfo.equipDrop += 1;
+	else if(msg.indexOf('Found Elite') >= 0) tsResults.itemInfo.equipDrop += 1;
+	else if(msg.indexOf('Found Master') >= 0) tsResults.itemInfo.equipDrop += 1;
+	// equips else if(msg.indexOf('a key') >= 0) tsResults.itemInfo.keyDrop += 1;
+	else if(msg.indexOf('a relic') >= 0) {
+		tsResults.itemInfo.relicDrop += 1;
+		tsResults.itemInfo.relicTotal += 1;
+	} else if(msg.indexOf('relics') >= 0) {
+		var count = parseInt(msg.match(/(\d)+/)[0]);
+		tsResults.itemInfo.relicDrop += 1;
+		tsResults.itemInfo.relicTotal += count;
+	} else if(msg.indexOf('gold coins') >= 0) {
+		var count = parseInt(msg.match(/(\d)+/)[0]);
+		tsResults.itemInfo.goldDrop += 1;
+		tsResults.itemInfo.goldTotal += count;
+	} else if(msg.indexOf('magic elements') >= 0) {
+		var count = parseInt(msg.match(/(\d)+/)[0]);
+		tsResults.itemInfo.magicElementsDrop += 1;
+		tsResults.itemInfo.magicElementsTotal += count;
+	}
+}
 function parseTSLog(datum) {
 	var arr = datum.split('|');
 	if (arr[0] != 'NLOG') {return;}
 
 	var channel = arr[1];
 	var msg = arr[2];
-	
+
 	// save all lines of text if requested
 	if(saveLogText) {
 		logText.push(msg);
@@ -99,7 +147,7 @@ function parseTSLog(datum) {
 
 		// track the total in addition to ts/scout
 		tsResults.items += 1;
-		return;
+		return handleItemDrop(msg);
 	} else if(channel == 2) {
 		// skip level up message before counting the action
 		if(msg.indexOf('gained a new tradeskill level') > -1) return;
@@ -132,6 +180,7 @@ function parseTSLog(datum) {
 	}
 }
 function updateOutput(results, msg) {
+	// TODO make each subsection its own function for readability
 	var outputArgs = [];
 	if(outputTiers) {
 		outputArgs = outputArgs.concat([
@@ -146,6 +195,21 @@ function updateOutput(results, msg) {
 		outputArgs = outputArgs.concat([
 			'regularItem%:', (100*tsResults.regularItems/tsResults.actions).toFixed(2),
 			'scoutItem%:', (100*tsResults.scoutingItems/tsResults.actions).toFixed(2)]);
+	if(outputItems) {
+		outputArgs = outputArgs.concat([
+			'equip%:', (100*tsResults.itemInfo.equipDrop/tsResults.actions).toFixed(4),
+			'res. bag%:', (100*tsResults.itemInfo.resourceBagDrop/tsResults.actions).toFixed(4),
+			'key%:', (100*tsResults.itemInfo.keyDrop/tsResults.actions).toFixed(4),
+			'gem%:', (100*tsResults.itemInfo.gemDrop/tsResults.actions).toFixed(4),
+			'ME%:', (100*tsResults.itemInfo.magicElementsDrop/tsResults.actions).toFixed(4),
+			'gold%:', (100*tsResults.itemInfo.goldDrop/tsResults.actions).toFixed(4),
+			'relic%:', (100*tsResults.itemInfo.relicDrop/tsResults.actions).toFixed(4),
+
+			'avg ME:', (tsResults.itemInfo.magicElementsTotal/tsResults.itemInfo.magicElementsDrop).toFixed(2),
+			'avg Gold:', (tsResults.itemInfo.goldTotal/tsResults.itemInfo.goldDrop).toFixed(2),
+			'avg Relics:', (tsResults.itemInfo.relicTotal/tsResults.itemInfo.relicDrop).toFixed(2),
+		]);
+	}
 	if(outputQuests)
 		outputArgs = outputArgs.concat(['quest%:', (100*tsResults.questItems/tsResults.questActions).toFixed(2)]);
 	if(outputTaxes)
