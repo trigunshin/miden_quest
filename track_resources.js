@@ -3,7 +3,7 @@
 // @namespace https://github.com/trigunshin/miden_quest
 // @description MQO resource tracker; need to run clearTSResults() to reset tile% after moving
 // @homepage https://trigunshin.github.com/miden_quest
-// @version 2
+// @version 3
 // @downloadURL http://trigunshin.github.io/miden_quest/track_resources.js
 // @updateURL http://trigunshin.github.io/miden_quest/track_resources.js
 // @include http://midenquest.com/Game.aspx
@@ -69,6 +69,12 @@ var tsResults = {
 		items: ['Tuna', 'Salmon', 'Flyfish', 'Marlin', 'Dragonfish'],
 		tracker: [/(\d+) Tuna/, /(\d+) Salmon/, /(\d+) Flyfish/, /(\d+) Marlin/, /(\d+) Dragonfish/]
 	},
+	sales: {
+		tracker: /(\d+) gold/,
+		total: 0,
+		taxed: 0,
+		gained: 0
+	},
 	itemInfo: {
 		equipDrop: 0,
 		resourceBagDrop: 0,
@@ -103,6 +109,10 @@ function clearTSResults() {
 		relicDrop: 0,
 		relicTotal: 0
 	};
+
+	tsResults.sales.total = 0;
+	tsResults.sales.taxed = 0;
+	tsResults.sales.gained = 0;
 
 	for(var i=1, iLen=6; i<iLen;i++) {
 		tsResults[i] = {drop: 0, total: 0, gained: 0, taxed: 0};
@@ -153,6 +163,26 @@ function handleItemDrop(msg) {
 		tsResults.itemInfo.magicElementsTotal += count;
 	}
 }
+function parsePrimaryTS(msg, tsResults, tsKey, wasTaxed) {
+	var patterns = tsResults[tsKey].tracker;
+	var itemTypes = tsResults[tsKey].items;
+	for(var i=0,iLen=itemTypes.length;i<iLen;i++) {
+		if(msg.indexOf(itemTypes[i]) >= 0) {
+			tsResults[i+1].drop += 1;
+			// track total/gained/taxed counts
+			var amt = parseInt(msg.match(patterns[i])[1]);
+			tsResults[i+1].total += amt;
+			if(wasTaxed) tsResults[i+1].taxed += amt;
+			else tsResults[i+1].gained += amt;
+		}
+	}
+}
+function parseSales(msg, tsResults, wasTaxed) {
+	var goldEarned = parseInt(msg.match(tsResults.sales.tracker)[1]);
+	tsResults.sales.total += goldEarned;
+	if(wasTaxed) tsResults.sales.taxed += goldEarned;
+	else tsResults.sales.gained += goldEarned;
+}
 function parseTSLog(datum) {
 	var arr = datum.split('|');
 	if (arr[0] != 'NLOG') {return;}
@@ -185,34 +215,16 @@ function parseTSLog(datum) {
 		var wasTaxed = msg.indexOf('to taxes') > -1;
 		if(wasTaxed) tsResults.taxedActions += 1;
 
-		// which array should be used?
-		var itemTypes = null;
-		var patterns = null;
 		if(msg.indexOf('You cut') >= 0) {
-			itemTypes = tsResults.lumber.items;
-			patterns = tsResults.lumber.tracker;
+			parsePrimaryTS(msg, tsResults, 'lumber', wasTaxed);
 		} else if(msg.indexOf('You mined') >= 0) {
-			itemTypes = tsResults.ore.items;
-			patterns = tsResults.ore.tracker;
+			parsePrimaryTS(msg, tsResults, 'ore', wasTaxed);
 		} else if(msg.indexOf('You gathered') >= 0) {
-			itemTypes = tsResults.plant.items;
-			patterns = tsResults.plant.tracker;
+			parsePrimaryTS(msg, tsResults, 'plant', wasTaxed);
 		} else if(msg.indexOf('You caught') >= 0) {
-			itemTypes = tsResults.fish.items;
-			patterns = tsResults.fish.tracker;
-		} else {
-			itemTypes = [];
-		}
-
-		for(var i=0,iLen=itemTypes.length;i<iLen;i++) {
-			if(msg.indexOf(itemTypes[i]) >= 0) {
-				tsResults[i+1].drop += 1;
-				// track total/gained/taxed counts
-				var amt = parseInt(msg.match(patterns[i])[1]);
-				tsResults[i+1].total += amt;
-				if(wasTaxed) tsResults[i+1].taxed += amt;
-				else tsResults[i+1].gained += amt;
-			}
+			parsePrimaryTS(msg, tsResults, 'fish', wasTaxed);
+		} else if(msg.indexOf('You earned') >= 0) {
+			parseSales(msg, tsResults, wasTaxed);
 		}
 
 		updateOutput(tsResults, msg);
@@ -262,9 +274,20 @@ function addItemOutput(tsResults, outputArgs) {
 		'Total Relics:', tsResults.itemInfo.relicTotal,
 		'&nbsp;', '&nbsp;']);
 }
-function addTaxOutput(tsResults, outputArgs) {
+function addSalesInfo(tsResults, outputArgs) {
 	return outputArgs.concat([
-		'tax%:', (100*tsResults.taxedActions/tsResults.actions).toFixed(2),
+		'Sales:', tsResults.sales.gained]);
+}
+function addTaxPercent(tsResults, outputArgs) {
+	return outputArgs.concat([
+		'tax%:', (100*tsResults.taxedActions/tsResults.actions).toFixed(2)]);
+}
+function addTaxSales(tsResults, outputArgs) {
+	return outputArgs.concat([
+		'sales tax:', tsResults.sales.taxed]);
+}
+function addTaxedItems(tsResults, outputArgs) {
+	return outputArgs.concat([
 		'&nbsp;total taxed', '&nbsp;',
 		't1:', tsResults[1].taxed,
 		't2:', tsResults[2].taxed,
@@ -274,14 +297,20 @@ function addTaxOutput(tsResults, outputArgs) {
 }
 function updateOutput(results, msg) {
 	var outputArgs = ['actions:', tsResults.actions, '&nbsp;', '&nbsp;'];
-	if(outputTiers) outputArgs = addTierInfo(tsResults, outputArgs);
+	// don't display tier data if sales is active
+	var salesActive = tsResults.sales.total >= 0;
+
+	if(outputTiers && !salesActive) outputArgs = addTierInfo(tsResults, outputArgs);
+	else if(outputTiers && salesActive) outputArgs = addSalesInfo(tsResults, outputArgs);
 	outputArgs = outputArgs.concat(['item%:', (100*tsResults.items/tsResults.actions).toFixed(2)]);
-	if(outputScouting) outputArgs = addScoutingInfo(tsResults, outputArgs);
+	if(outputScouting && !salesActive) outputArgs = addScoutingInfo(tsResults, outputArgs);
 	if(outputItems) outputArgs = addItemOutput(tsResults, outputArgs);
-	if(outputQuests)
-		outputArgs = outputArgs.concat(['quest%:', (100*tsResults.questItems/tsResults.questActions).toFixed(2)]);
-	if(outputTaxes)
-		outputArgs = addTaxOutput(tsResults, outputArgs);
+	if(outputQuests) outputArgs = outputArgs.concat(['quest%:', (100*tsResults.questItems/tsResults.questActions).toFixed(2)]);
+	if(outputTaxes) {
+		outputArgs = addTaxPercent(tsResults, outputArgs);
+		if(salesActive) outputArgs = addTaxSales(tsResults, outputArgs);
+		else outputArgs = addTaxedItems(tsResults, outputArgs);
+	}
 
 	outputArgs = outputArgs.concat(['\tmsg:', msg]);
 
