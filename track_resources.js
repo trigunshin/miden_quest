@@ -89,6 +89,7 @@ var tsResults = {
 	}
 };
 function clearTSResults() {
+	console.info('clearing results');
 	tsResults.actions = 0;
 	tsResults.items = 0;
 	tsResults.regularItems = 0;
@@ -117,6 +118,7 @@ function clearTSResults() {
 	for(var i=1, iLen=6; i<iLen;i++) {
 		tsResults[i] = {drop: 0, total: 0, gained: 0, taxed: 0};
 	}
+	updateOutput(tsResults, 'data reset complete');
 }
 function handleQuestItem(msg) {
 	var matches = msg.match(questItemRegex);
@@ -298,7 +300,7 @@ function addTaxedItems(tsResults, outputArgs) {
 function updateOutput(results, msg) {
 	var outputArgs = ['actions:', tsResults.actions, '&nbsp;', '&nbsp;'];
 	// don't display tier data if sales is active
-	var salesActive = tsResults.sales.total >= 0;
+	var salesActive = tsResults.sales.total > 0;
 
 	if(outputTiers && !salesActive) outputArgs = addTierInfo(tsResults, outputArgs);
 	else if(outputTiers && salesActive) outputArgs = addSalesInfo(tsResults, outputArgs);
@@ -326,6 +328,8 @@ function formatResource(label, value) {
 }
 function updateUI(outputArgs) {
 	$('#'+resourceListId).empty();
+
+	$('#'+resourceListId).append('<li><div><a href="#" onClick="clearTSResults(); return false">Reset Data</a></div></li>');
 	for(var i=0,iLen=outputArgs.length;i<iLen;i+=2) {
 		$('#'+resourceListId).append(formatResource(outputArgs[i], outputArgs[i+1]));
 	}
