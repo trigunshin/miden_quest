@@ -3,7 +3,7 @@
 // @namespace https://github.com/trigunshin/miden_quest
 // @description MQO resource tracker; need to run clearTSResults() to reset tile% after moving
 // @homepage https://trigunshin.github.com/miden_quest
-// @version 3
+// @version 4
 // @downloadURL http://trigunshin.github.io/miden_quest/track_resources.js
 // @updateURL http://trigunshin.github.io/miden_quest/track_resources.js
 // @include http://midenquest.com/Game.aspx
@@ -22,8 +22,6 @@ this into the console:  "clearTSResults();".
 
 This *should* be compatible with Ryalane's script if Ryalane's script loads first.
 
-TODO:
-	sales
 //*/
 // preferences; data is still tracked, this only affects output
 var outputItems = true;
@@ -278,7 +276,8 @@ function addItemOutput(tsResults, outputArgs) {
 }
 function addSalesInfo(tsResults, outputArgs) {
 	return outputArgs.concat([
-		'Sales:', tsResults.sales.gained]);
+		'Sales:', tsResults.sales.gained,
+		'Avg Sale:', (tsResults.sales.gained/tsResults.actions).toFixed(2)]);
 }
 function addTaxPercent(tsResults, outputArgs) {
 	return outputArgs.concat([
@@ -286,7 +285,8 @@ function addTaxPercent(tsResults, outputArgs) {
 }
 function addTaxSales(tsResults, outputArgs) {
 	return outputArgs.concat([
-		'sales tax:', tsResults.sales.taxed]);
+		'sales tax:', tsResults.sales.taxed,
+		'avg tax:', (tsResults.sales.taxed/tsResults.taxedActions).toFixed(2)]);
 }
 function addTaxedItems(tsResults, outputArgs) {
 	return outputArgs.concat([
