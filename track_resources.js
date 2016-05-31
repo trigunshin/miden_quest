@@ -3,7 +3,7 @@
 // @namespace https://github.com/trigunshin/miden_quest
 // @description MQO resource tracker; need to run clearTSResults() to reset tile% after moving
 // @homepage https://trigunshin.github.com/miden_quest
-// @version 4
+// @version 5
 // @downloadURL http://trigunshin.github.io/miden_quest/track_resources.js
 // @updateURL http://trigunshin.github.io/miden_quest/track_resources.js
 // @include http://midenquest.com/Game.aspx
@@ -22,6 +22,9 @@ this into the console:  "clearTSResults();".
 
 This *should* be compatible with Ryalane's script if Ryalane's script loads first.
 
+TODO
+	track global bonus?
+	hourly averages?
 //*/
 // preferences; data is still tracked, this only affects output
 var outputItems = true;
@@ -36,6 +39,9 @@ var saveLogText = false;
 var logText = [];
 var questItemRegex = /(\d+) \/ (\d+)/;
 var resourceListId = 'resourceLogList';
+
+var normalAverageMultiplier = 60/5*60;
+var quadAverageMultiplier = 60/3*60*4;
 // results aren't stored under the resource because we aren't tracking tile changes/types
 var tsResults = {
 	actions: 0,
@@ -275,9 +281,13 @@ function addItemOutput(tsResults, outputArgs) {
 		'&nbsp;', '&nbsp;']);
 }
 function addSalesInfo(tsResults, outputArgs) {
+	var avgSale = tsResults.sales.gained/tsResults.actions;
 	return outputArgs.concat([
 		'Sales:', tsResults.sales.gained,
-		'Avg Sale:', (tsResults.sales.gained/tsResults.actions).toFixed(2)]);
+		'Avg Sale:', avgSale.toFixed(2),
+		'1x Estimate:', (avgSale * normalAverageMultiplier).toFixed(2),
+		'4x Estimate:', (avgSale * quadAverageMultiplier).toFixed(2),
+		]);
 }
 function addTaxPercent(tsResults, outputArgs) {
 	return outputArgs.concat([
