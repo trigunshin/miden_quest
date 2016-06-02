@@ -345,14 +345,7 @@ function updateUI(outputArgs) {
 	}
 }
 function initializeUI() {
-	jQuery('<div/>', {
-		id: 'resourceLogContainer',
-		text: 'Resource Log',
-		style: 'float: right;'
-	}).prependTo('body');
-	jQuery('<ul/>', {
-		id: resourceListId,
-	}).appendTo('div#resourceLogContainer');
+	$("body").append('<div id="resourceLogContainer" style="position: absolute;top: 0;right: 0;">Resource Log <ul id="resourceLogList"></ul></div>');
 }
 function track_resources_onmsg(evt) {
 	track_resources_original_msg(evt);
