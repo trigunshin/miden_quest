@@ -3,7 +3,7 @@
 // @namespace https://github.com/trigunshin/miden_quest
 // @description MQO resource tracker; need to run clearTSResults() to reset tile% after moving
 // @homepage https://trigunshin.github.com/miden_quest
-// @version 5
+// @version 6
 // @downloadURL http://trigunshin.github.io/miden_quest/track_resources.js
 // @updateURL http://trigunshin.github.io/miden_quest/track_resources.js
 // @include http://midenquest.com/Game.aspx
@@ -345,14 +345,7 @@ function updateUI(outputArgs) {
 	}
 }
 function initializeUI() {
-	jQuery('<div/>', {
-		id: 'resourceLogContainer',
-		text: 'Resource Log',
-		style: 'float: right;'
-	}).prependTo('body');
-	jQuery('<ul/>', {
-		id: resourceListId,
-	}).appendTo('div#resourceLogContainer');
+	$("body").append('<div id="resourceLogContainer" style="position: absolute;top: 0;right: 0;">Resource Log <ul id="resourceLogList"></ul></div>');
 }
 function track_resources_onmsg(evt) {
 	track_resources_original_msg(evt);
