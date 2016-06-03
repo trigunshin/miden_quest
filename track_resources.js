@@ -345,7 +345,7 @@ function updateUI(outputArgs) {
 	}
 }
 function initializeUI() {
-	$("body").append('<div id="resourceLogContainer" style="position: absolute;top: 0;right: 0;">Resource Log <ul id="resourceLogList"></ul></div>');
+	$("body").append('<div id="resourceLogContainer" style="position: absolute;top: 0;right: 0;"><span>Resource Log</span> <ul id="resourceLogList">Initializing...</ul></div>');
 }
 function track_resources_onmsg(evt) {
 	track_resources_original_msg(evt);
