@@ -3,7 +3,7 @@
 // @namespace https://github.com/trigunshin/miden_quest
 // @description MQO resource tracker; need to run clearTSResults() to reset tile% after moving
 // @homepage https://trigunshin.github.com/miden_quest
-// @version 6
+// @version 7
 // @downloadURL http://trigunshin.github.io/miden_quest/track_resources.js
 // @updateURL http://trigunshin.github.io/miden_quest/track_resources.js
 // @include http://midenquest.com/Game.aspx
@@ -38,6 +38,7 @@ var saveLogText = false;
 
 var logText = [];
 var questItemRegex = /(\d+) \/ (\d+)/;
+var itemDropCountRegex = /^\[.+\] Found (\d+)/;
 var resourceListId = 'resourceLogList';
 
 var normalAverageMultiplier = 60/5*60;
@@ -156,15 +157,15 @@ function handleItemDrop(msg) {
 		tsResults.itemInfo.relicDrop += 1;
 		tsResults.itemInfo.relicTotal += 1;
 	} else if(msg.indexOf('relics') >= 0) {
-		var count = parseInt(msg.match(/(\d)+/)[0]);
+		var count = parseInt(msg.match(itemDropCountRegex)[1]);
 		tsResults.itemInfo.relicDrop += 1;
 		tsResults.itemInfo.relicTotal += count;
 	} else if(msg.indexOf('gold coins') >= 0) {
-		var count = parseInt(msg.match(/(\d)+/)[0]);
+		var count = parseInt(msg.match(itemDropCountRegex)[1]);
 		tsResults.itemInfo.goldDrop += 1;
 		tsResults.itemInfo.goldTotal += count;
 	} else if(msg.indexOf('magic elements') >= 0) {
-		var count = parseInt(msg.match(/(\d)+/)[0]);
+		var count = parseInt(msg.match(itemDropCountRegex)[1]);
 		tsResults.itemInfo.magicElementsDrop += 1;
 		tsResults.itemInfo.magicElementsTotal += count;
 	}
