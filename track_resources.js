@@ -3,7 +3,7 @@
 // @namespace https://github.com/trigunshin/miden_quest
 // @description MQO resource tracker; need to run clearTSResults() to reset tile% after moving
 // @homepage https://trigunshin.github.com/miden_quest
-// @version 7
+// @version 8
 // @downloadURL http://trigunshin.github.io/miden_quest/track_resources.js
 // @updateURL http://trigunshin.github.io/miden_quest/track_resources.js
 // @include http://midenquest.com/Game.aspx
@@ -37,6 +37,7 @@ var outputToConsole = false;
 var saveLogText = false;
 
 var logText = [];
+var tsXPRegex = /(\d+) skill exp/;
 var questItemRegex = /(\d+) \/ (\d+)/;
 var itemDropCountRegex = /^\[.+\] Found (\d+)/;
 var resourceListId = 'resourceLogList';
@@ -46,6 +47,7 @@ var quadAverageMultiplier = 60/3*60*4;
 // results aren't stored under the resource because we aren't tracking tile changes/types
 var tsResults = {
 	actions: 0,
+	xp: 0,
 	taxedActions: 0,
 	items: 0,
 	regularItems: 0,
@@ -115,6 +117,7 @@ function clearTSResults() {
 		relicDrop: 0,
 		relicTotal: 0
 	};
+	tsResults.xp = 0;
 
 	tsResults.sales.total = 0;
 	tsResults.sales.taxed = 0;
@@ -222,6 +225,8 @@ function parseTSLog(datum) {
 		var wasTaxed = msg.indexOf('to taxes') > -1;
 		if(wasTaxed) tsResults.taxedActions += 1;
 
+		tsResults.xp += parseInt(msg.match(tsXPRegex)[1]);
+
 		if(msg.indexOf('You cut') >= 0) {
 			parsePrimaryTS(msg, tsResults, 'lumber', wasTaxed);
 		} else if(msg.indexOf('You mined') >= 0) {
@@ -308,8 +313,15 @@ function addTaxedItems(tsResults, outputArgs) {
 		't4:', tsResults[4].taxed,
 		't5:', tsResults[5].taxed]);
 }
+function addXP(tsResults, outputArgs) {
+	return outputArgs.concat([
+		'total XP:', tsResults.xp,
+		'avg XP:', (tsResults.xp/tsResults.actions).toFixed(2),
+		'&nbsp;', '&nbsp;']);
+}
 function updateOutput(results, msg) {
 	var outputArgs = ['actions:', tsResults.actions, '&nbsp;', '&nbsp;'];
+	outputArgs = addXP(tsResults, outputArgs);
 	// don't display tier data if sales is active
 	var salesActive = tsResults.sales.total > 0;
 
