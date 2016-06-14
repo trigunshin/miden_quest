@@ -1,6 +1,6 @@
 var printResultsFlag = false;
 var postToURL = true;
-var postURL = '';
+var kingdomPostURL = '';
 
 function parseKingdom(msg) {
 	var results = [];
@@ -32,7 +32,7 @@ function printKingdomResults(results) {
 }
 function updateGoogleSheets(data) {
 	var request = $.ajax({
-		url: postURL,
+		url: kingdomPostURL,
 		type: 'post',
 		data: data
 	});
