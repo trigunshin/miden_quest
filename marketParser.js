@@ -28,7 +28,7 @@ var resourceNameMappings = {
 	'Mag. Elements': 'ME',
 };
 var postToURL = true;
-var postURL = '';
+var marketPostURL = '';
 function parseMarket(msg) {
 	var container = $("div:contains('Per unit')").last().parent().parent();
 	var auctions = container.children().slice(2);
@@ -71,7 +71,7 @@ function updateGoogleSheets(auctionData) {
 	data[sheetName] = perUnit;
 
 	var request = $.ajax({
-		url: postURL,
+		url: marketPostURL,
 		type: 'post',
 		data: data
 	});
