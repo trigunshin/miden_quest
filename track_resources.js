@@ -3,7 +3,7 @@
 // @namespace https://github.com/trigunshin/miden_quest
 // @description MQO resource tracker; need to run clearTSResults() to reset tile% after moving
 // @homepage https://trigunshin.github.com/miden_quest
-// @version 8
+// @version 9
 // @downloadURL http://trigunshin.github.io/miden_quest/track_resources.js
 // @updateURL http://trigunshin.github.io/miden_quest/track_resources.js
 // @include http://midenquest.com/Game.aspx
@@ -18,20 +18,20 @@ Mining and Woodcutting. It will update the results after every gather; please no
 exact values, and you should probably wait for 500-1000+ attempts on a tile to draw conclusions.
 
 To reset the values (necessary if you move tiles) you can copy/paste the whole script again or just enter
-this into the console:  "clearTSResults();".
+this into the console:  "clearTSResults();". For tampermonkey this will require the "Tampermonkey" frame
+option instead of the "Top" frame option at the top-left part of the console.
 
 This *should* be compatible with Ryalane's script if Ryalane's script loads first.
 
 TODO
 	track global bonus?
-	hourly averages?
+	fix data_reset in tampermonkey
 //*/
 // preferences; data is still tracked, this only affects output
 var outputItems = true;
 var outputTaxes = true;
 var outputTiers = true;
 var outputQuests = true;
-var outputScouting = true;
 var printItemDrops = true;
 var outputToConsole = false;
 var saveLogText = false;
@@ -82,6 +82,12 @@ var tsResults = {
 		taxed: 0,
 		gained: 0
 	},
+	scouts: {
+		tracker: /(\d+) landmark/,
+		total: 0,
+		taxed: 0,
+		gained: 0
+	},
 	itemInfo: {
 		equipDrop: 0,
 		resourceBagDrop: 0,
@@ -122,6 +128,10 @@ function clearTSResults() {
 	tsResults.sales.total = 0;
 	tsResults.sales.taxed = 0;
 	tsResults.sales.gained = 0;
+
+	tsResults.scouts.total = 0;
+	tsResults.scouts.taxed = 0;
+	tsResults.scouts.gained = 0;
 
 	for(var i=1, iLen=6; i<iLen;i++) {
 		tsResults[i] = {drop: 0, total: 0, gained: 0, taxed: 0};
@@ -193,6 +203,12 @@ function parseSales(msg, tsResults, wasTaxed) {
 	if(wasTaxed) tsResults.sales.taxed += goldEarned;
 	else tsResults.sales.gained += goldEarned;
 }
+function parseScouts(msg, tsResults, wasTaxed) {
+	var marksEarned = parseInt(msg.match(tsResults.scouts.tracker)[1]);
+	tsResults.scouts.total += marksEarned;
+	if(wasTaxed) tsResults.scouts.taxed += marksEarned;
+	else tsResults.scouts.gained += marksEarned;
+}
 function parseTSLog(datum) {
 	var arr = datum.split('|');
 	if (arr[0] != 'NLOG') {return;}
@@ -237,6 +253,8 @@ function parseTSLog(datum) {
 			parsePrimaryTS(msg, tsResults, 'fish', wasTaxed);
 		} else if(msg.indexOf('You earned') >= 0) {
 			parseSales(msg, tsResults, wasTaxed);
+		} else if(msg.indexOf('You scouted') >= 0) {
+			parseScouts(msg, tsResults, wasTaxed);
 		}
 
 		updateOutput(tsResults, msg);
@@ -259,7 +277,7 @@ function addTierInfo(tsResults, outputArgs) {
 		't5:', tsResults[5].gained,
 		'&nbsp;', '&nbsp;']);
 }
-function addScoutingInfo(tsResults, outputArgs) {
+function addScoutingItemInfo(tsResults, outputArgs) {
 	return outputArgs.concat([
 		'regularItem%:', (100*tsResults.regularItems/tsResults.actions).toFixed(2),
 		'scoutItem%:', (100*tsResults.scoutingItems/tsResults.actions).toFixed(2)]);
@@ -295,6 +313,15 @@ function addSalesInfo(tsResults, outputArgs) {
 		'4x Estimate:', (avgSale * quadAverageMultiplier).toFixed(2),
 		]);
 }
+function addScoutsInfo(tsResults, outputArgs) {
+	var avgScout = tsResults.scouts.gained/tsResults.actions;
+	return outputArgs.concat([
+		'Scouts:', tsResults.scouts.gained,
+		'Avg Scout:', avgScout.toFixed(2),
+		'1x Estimate:', (avgScout * normalAverageMultiplier).toFixed(2),
+		'4x Estimate:', (avgScout * quadAverageMultiplier).toFixed(2),
+		]);
+}
 function addTaxPercent(tsResults, outputArgs) {
 	return outputArgs.concat([
 		'tax%:', (100*tsResults.taxedActions/tsResults.actions).toFixed(2)]);
@@ -302,6 +329,11 @@ function addTaxPercent(tsResults, outputArgs) {
 function addTaxSales(tsResults, outputArgs) {
 	return outputArgs.concat([
 		'sales tax:', tsResults.sales.taxed,
+		'avg tax:', (tsResults.sales.taxed/tsResults.taxedActions).toFixed(2)]);
+}
+function addTaxScouts(tsResults, outputArgs) {
+	return outputArgs.concat([
+		'scout tax:', tsResults.sales.taxed,
 		'avg tax:', (tsResults.sales.taxed/tsResults.taxedActions).toFixed(2)]);
 }
 function addTaxedItems(tsResults, outputArgs) {
@@ -324,16 +356,21 @@ function updateOutput(results, msg) {
 	outputArgs = addXP(tsResults, outputArgs);
 	// don't display tier data if sales is active
 	var salesActive = tsResults.sales.total > 0;
+	var scoutsActive = tsResults.scouts.total > 0;
 
-	if(outputTiers && !salesActive) outputArgs = addTierInfo(tsResults, outputArgs);
-	else if(outputTiers && salesActive) outputArgs = addSalesInfo(tsResults, outputArgs);
-	outputArgs = outputArgs.concat(['item%:', (100*tsResults.items/tsResults.actions).toFixed(2)]);
-	if(outputScouting && !salesActive) outputArgs = addScoutingInfo(tsResults, outputArgs);
+	if(outputTiers && !salesActive && !scoutsActive) outputArgs = addTierInfo(tsResults, outputArgs);
+	else if(outputTiers && salesActive && !scoutsActive) outputArgs = addSalesInfo(tsResults, outputArgs);
+	else if(outputTiers && !salesActive && scoutsActive) outputArgs = addScoutsInfo(tsResults, outputArgs);
+
+	outputArgs = outputArgs.concat(['&nbsp;', '&nbsp;', 'item%:', (100*tsResults.items/tsResults.actions).toFixed(2)]);
+	if(scoutsActive) outputArgs = addScoutingItemInfo(tsResults, outputArgs);
+
 	if(outputItems) outputArgs = addItemOutput(tsResults, outputArgs);
 	if(outputQuests) outputArgs = outputArgs.concat(['quest%:', (100*tsResults.questItems/tsResults.questActions).toFixed(2)]);
 	if(outputTaxes) {
 		outputArgs = addTaxPercent(tsResults, outputArgs);
 		if(salesActive) outputArgs = addTaxSales(tsResults, outputArgs);
+		else if(scoutsActive) outputArgs = addTaxScouts(tsResults, outputArgs);
 		else outputArgs = addTaxedItems(tsResults, outputArgs);
 	}
 
