@@ -9,6 +9,7 @@
 // @include http://midenquest.com/Game.aspx
 // @include http://www.midenquest.com/Game.aspx
 // @include https://www.midenquest.com/Game.aspx
+// @grant none
 // ==/UserScript==
 
 /*
