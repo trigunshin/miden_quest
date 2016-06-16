@@ -170,10 +170,10 @@ const building_costs = {
 
 
 let defaultState = {
-    wood: {t1wood: 0, t2wood: 0, t3wood: 0, t4wood: 0, t5wood: 0},
-    ore: {t1ore: 0, t2ore: 0, t3ore: 0, t4ore: 0, t5ore: 0},
-    plant: {t1plant: 0, t2plant: 0, t3plant: 0, t4plant: 0, t5plant: 0},
-    fish: {t1fish: 0, t2fish: 0, t3fish: 0, t4fish: 0, t5fish: 0},
+    wood: {t1: 0, t2: 0, t3: 0, t4: 0, t5: 0},
+    ore: {t1: 0, t2: 0, t3: 0, t4: 0, t5: 0},
+    plant: {t1: 0, t2: 0, t3: 0, t4: 0, t5: 0},
+    fish: {t1: 0, t2: 0, t3: 0, t4: 0, t5: 0},
     dropCalculator: {
         tsDropRate: 1,
         tsSecondsPer: 5,
@@ -199,7 +199,80 @@ _.each(_.keys(building_costs), (building_key) => {
     defaultState[building_key]['finish'] = 0;
 });
 
+// set up kingdom building configs
+const buildingReducerHelper = (key, state, action) => {
+    if(!action.type || !action.type.startsWith(key)) return state||defaultState[key];
 
+    // update state value
+    let newState = Object.assign({}, state);
+    if(action.type.endsWith('finish')) {
+        newState.finish = action.value||0;
+        if(newState.start > newState.finish) newState.start = newState.finish - 1;
+    }
+    else if(action.type.endsWith('start')) {
+        newState.start = action.value||0;
+        if(newState.start > newState.finish) newState.finish = newState.start + 1;
+    }
+    else return state||defaultState[key];
+
+    // calculate values
+    const costs = building_costs[key].cost;
+    const start = newState.start;
+    const finish = newState.finish;
+
+    const per_idx_costs = _.map(_.range(start+1, finish+1), (idx) => {
+        return _.map(_.keys(costs), (label) => {
+            const cost = costs[label];
+            return {label: label, value: cost.base * Math.pow(cost.factor, (idx-1))};
+        });
+    });
+
+    // start each resource's value @ 0
+    let initAccum = {};
+    _.each(_.keys(costs), (label) => {initAccum[label] = 0;});
+
+    // sum the costs per resource
+    const totalCosts = _.reduce(per_idx_costs, (accum, idx_cost) => {
+        _.each(idx_cost, ({label, value}) => {
+            accum[label] += value;
+        });
+        return accum;
+    }, initAccum);
+
+    _.each(_.keys(totalCosts), (label) => {newState[label] = totalCosts[label].toFixed(0);});
+
+    return newState;
+};
+const buildingReducers = {};
+_.each(_.keys(building_costs), (building_key) => {
+    buildingReducers[building_key] = _.partial((key, state, action) => {
+        return buildingReducerHelper(key, state, action);
+    }, building_key);
+});
+
+const building_configs = _.map(_.keys(building_costs), (building_id) => {
+    const building = building_costs[building_id];
+    let ret = {
+        title: <h4>{building.label}</h4>,
+        stateKey: building_id,
+        reducer: buildingReducers[building_id],
+        cols: [
+            {id: ''+building_id+'_start', title: '# Start', type: 'number', placeholder: 0, cls: 'input', stateKey: building_id, valueKey: 'start'},
+            {id: ''+building_id+'_finish', title: '# Finished', type: 'number', placeholder: 0, cls: 'input', stateKey: building_id, valueKey: 'finish'}
+        ]
+    }
+
+    const labels = _.map(_.keys(building.cost), (label) => {
+        const cost = building.cost;
+        return {id: label, title: label, cls: 'label'};
+    });
+    ret.cols = ret.cols.concat(labels);
+
+    return ret;
+});
+
+
+// set up misc config configuration
 const dropReducer = (state=defaultState.dropCalculator, action) => {
     let newState = Object.assign({}, state);
     const op = {
@@ -272,125 +345,17 @@ const relicReducer = (state=defaultState.relicCalculator, action) => {
 
     return newState;
 };
-const buildingReducerHelper = (key, state, action) => {
-    if(!action.type || !action.type.startsWith(key)) return state||defaultState[key];
-
-    // input fields use key+_value, so also populate those
-    let newState = Object.assign({}, state);
-    if(action.type.endsWith('finish')) {
-        newState.finish = action.value||0;
-        newState[key+'_finish'] = action.value||0;
-    }
-    else if(action.type.endsWith('start')) {
-        newState.start = action.value||0;
-        newState[key+'_start'] = action.value||0;
-        if(newState.start > newState.finish) {
-            newState.finish = newState.start + 1;
-            newState[key+'_finish'] = newState.finish;
-        }
-    }
-    else return state||defaultState[key];
-
-    const costs = building_costs[key].cost;
-    const start = newState.start;
-    const finish = newState.finish;
-
-    const per_idx_costs = _.map(_.range(start+1, finish+1), (idx) => {
-        return _.map(_.keys(costs), (label) => {
-            const cost = costs[label];
-            return {label: label, value: cost.base * Math.pow(cost.factor, (idx-1))};
-        });
-    });
-
-    let initAccum = {};
-    _.each(_.keys(costs), (label) => {initAccum[label] = 0;});
-
-    const totalCosts = _.reduce(per_idx_costs, (accum, idx_cost) => {
-        _.each(idx_cost, ({label, value}) => {
-            accum[label] += value;
-        });
-        return accum;
-    }, initAccum);
-
-    _.each(_.keys(totalCosts), (label) => {newState[label] = totalCosts[label].toFixed(0);});
-
-    return newState;
-};
-const buildingReducers = {};
-_.each(_.keys(building_costs), (building_key) => {
-    buildingReducers[building_key] = _.partial((key, state, action) => {
-        return buildingReducerHelper(key, state, action);
-    }, building_key);
-});
-
-const woodReducer = (state=defaultState.wood, action) => {
-    let newState = Object.assign({}, state);
-    const op = {
-        t1wood: (value) => {newState.t1wood=value;},
-        t2wood: (value) => {newState.t2wood=value;},
-        t3wood: (value) => {newState.t3wood=value;},
-        t4wood: (value) => {newState.t4wood=value;},
-        t5wood: (value) => {newState.t5wood=value;}
-    }
-    // does the action key match what we expect?
-    if(!action.type || _.indexOf(_.keys(op), action.type) < 0) return state;
-    op[action.type](action.value||0);
-
-    return newState;
-};
-const oreReducer = (state=defaultState.ore, action) => {
-    let newState = Object.assign({}, state);
-    const op = {
-        t1ore: (value) => {newState.t1ore=value;},
-        t2ore: (value) => {newState.t2ore=value;},
-        t3ore: (value) => {newState.t3ore=value;},
-        t4ore: (value) => {newState.t4ore=value;},
-        t5ore: (value) => {newState.t5ore=value;}
-    }
-    // does the action key match what we expect?
-    if(!action.type || _.indexOf(_.keys(op), action.type) < 0) return state;
-    op[action.type](action.value||0);
-    return newState;
-};
-const plantReducer = (state=defaultState.plant, action) => {
-    let newState = Object.assign({}, state);
-    const op = {
-        t1plant: (value) => {newState.t1plant=value;},
-        t2plant: (value) => {newState.t2plant=value;},
-        t3plant: (value) => {newState.t3plant=value;},
-        t4plant: (value) => {newState.t4plant=value;},
-        t5plant: (value) => {newState.t5plant=value;}
-    }
-    // does the action key match what we expect?
-    if(!action.type || _.indexOf(_.keys(op), action.type) < 0) return state;
-    op[action.type](action.value||0);
-    return newState;
-};
-const fishReducer = (state=defaultState.fish, action) => {
-    let newState = Object.assign({}, state);
-    const op = {
-        t1fish: (value) => {newState.t1fish=value;},
-        t2fish: (value) => {newState.t2fish=value;},
-        t3fish: (value) => {newState.t3fish=value;},
-        t4fish: (value) => {newState.t4fish=value;},
-        t5fish: (value) => {newState.t5fish=value;}
-    }
-    // does the action key match what we expect?
-    if(!action.type || _.indexOf(_.keys(op), action.type) < 0) return state;
-    op[action.type](action.value||0);
-    return newState;
-};
 const configs = {
     dropConfig: {
         title: <h4>Drop Information</h4>,
         stateKey: 'dropCalculator',
         reducer: dropReducer,
         cols: [
-            {id: 'tsDropRate', title: 'TS Drop Rate %', type: 'number', placeholder: 1, cls: 'input'},
-            {id: 'tsSecondsPer', title: 'Sec/Attempt', type: 'number', placeholder: 5, cls: 'input'},
-            {id: 'relicDropRate', title: 'Relic %', type: 'number', placeholder: 0, cls: 'input'},
-            {id: 'gemDropRate', title: 'Gem %', type: 'number', placeholder: 0, cls: 'input'},
-            {id: 'hoursFarming', title: 'Hours', type: 'number', placeholder: 1, cls: 'input'},
+            {id: 'tsDropRate', title: 'TS Drop Rate %', type: 'number', placeholder: 1, cls: 'input', stateKey: 'dropCalculator', valueKey: 'tsDropRate'},
+            {id: 'tsSecondsPer', title: 'Sec/Attempt', type: 'number', placeholder: 5, cls: 'input', stateKey: 'dropCalculator', valueKey: 'tsSecondsPer'},
+            {id: 'relicDropRate', title: 'Relic %', type: 'number', placeholder: 0, cls: 'input', stateKey: 'dropCalculator', valueKey: 'relicDropRate'},
+            {id: 'gemDropRate', title: 'Gem %', type: 'number', placeholder: 0, cls: 'input', stateKey: 'dropCalculator', valueKey: 'gemDropRate'},
+            {id: 'hoursFarming', title: 'Hours', type: 'number', placeholder: 1, cls: 'input', stateKey: 'dropCalculator', valueKey: 'hoursFarming'},
             {id: 'totalDropRate', title: 'Drop Rate', cls: 'label'},
             {id: 'dropHourlyAttempts', title: 'Hourly Attempts', cls: 'label'},
             {id: 'hourlyDrops', title: 'Hourly Drops', cls: 'label'},
@@ -402,8 +367,8 @@ const configs = {
         stateKey: 'luckCalculator',
         reducer: luckReducer,
         cols: [
-            {id: 'luckPersonal', title: 'Personal Luck', type: 'number', placeholder: 0, cls: 'input'},
-            {id: 'luckKingdom', title: 'Kingdom Luck', type: 'number', placeholder: 0, cls: 'input'},
+            {id: 'luckPersonal', title: 'Personal Luck', type: 'number', placeholder: 0, cls: 'input', stateKey: 'luckCalculator', valueKey: 'luckPersonal'},
+            {id: 'luckKingdom', title: 'Kingdom Luck', type: 'number', placeholder: 0, cls: 'input', stateKey: 'luckCalculator', valueKey: 'luckKingdom'},
 
             {id: 'luckTier1', title: 'Tier 1', cls: 'label'},
             {id: 'luckTier2', title: 'Tier 2', cls: 'label'},
@@ -417,92 +382,51 @@ const configs = {
         stateKey: 'relicCalculator',
         reducer: relicReducer,
         cols: [
-            {id: 'xpRelicCost', title: 'XP Cost', type: 'number', placeholder: 0, cls: 'input'},
-            {id: 'resourceRelicCost', title: 'Res% Cost', type: 'number', placeholder: 0, cls: 'input'},
-            {id: 'workloadRelicCost', title: 'Workload Cost', type: 'number', placeholder: 0, cls: 'input'},
-            {id: 'dropRelicCost', title: 'Drop% Cost', type: 'number', placeholder: 0, cls: 'input'},
-            {id: 'luckRelicCost', title: 'Res Luck% Cost', type: 'number', placeholder: 0, cls: 'input'},
+            {id: 'xpRelicCost', title: 'XP Cost', type: 'number', placeholder: 0, cls: 'input', stateKey: 'relicCalculator', valueKey: 'xpRelicCost'},
+            {id: 'resourceRelicCost', title: 'Res% Cost', type: 'number', placeholder: 0, cls: 'input', stateKey: 'relicCalculator', valueKey: 'resourceRelicCost'},
+            {id: 'workloadRelicCost', title: 'Workload Cost', type: 'number', placeholder: 0, cls: 'input', stateKey: 'relicCalculator', valueKey: 'workloadRelicCost'},
+            {id: 'dropRelicCost', title: 'Drop% Cost', type: 'number', placeholder: 0, cls: 'input', stateKey: 'relicCalculator', valueKey: 'dropRelicCost'},
+            {id: 'luckRelicCost', title: 'Res Luck% Cost', type: 'number', placeholder: 0, cls: 'input', stateKey: 'relicCalculator', valueKey: 'luckRelicCost'},
             {id: 'relicsSpent', title: 'Relics Spent', cls: 'label'}
         ]
     }
 };
-let resourceCostCalculators = {
-    woodCalculator: {
-        title: <h4>Wood Cost</h4>,
-        stateKey: 'wood',
-        reducer: woodReducer,
-        cols: [
-            {id: 't1wood', title: 'T1 Wood', type: 'number', placeholder: 0, cls: 'input'},
-            {id: 't2wood', title: 'T2 Wood', type: 'number', placeholder: 0, cls: 'input'},
-            {id: 't3wood', title: 'T3 Wood', type: 'number', placeholder: 0, cls: 'input'},
-            {id: 't4wood', title: 'T4 Wood', type: 'number', placeholder: 0, cls: 'input'},
-            {id: 't5wood', title: 'T5 Wood', type: 'number', placeholder: 0, cls: 'input'}
-        ]
-    },
-    oreCalculator: {
-        title: <h4>Ore Cost</h4>,
-        stateKey: 'ore',
-        reducer: oreReducer,
-        cols: [
-            {id: 't1ore', title: 'T1 Ore', type: 'number', placeholder: 0, cls: 'input'},
-            {id: 't2ore', title: 'T2 Ore', type: 'number', placeholder: 0, cls: 'input'},
-            {id: 't3ore', title: 'T3 Ore', type: 'number', placeholder: 0, cls: 'input'},
-            {id: 't4ore', title: 'T4 Ore', type: 'number', placeholder: 0, cls: 'input'},
-            {id: 't5ore', title: 'T5 Ore', type: 'number', placeholder: 0, cls: 'input'}
-        ]
-    },
-    plantCalculator: {
-        title: <h4>Plant Cost</h4>,
-        stateKey: 'plant',
-        reducer: plantReducer,
-        cols: [
-            {id: 't1plant', title: 'T1 Plant', type: 'number', placeholder: 0, cls: 'input'},
-            {id: 't2plant', title: 'T2 Plant', type: 'number', placeholder: 0, cls: 'input'},
-            {id: 't3plant', title: 'T3 Plant', type: 'number', placeholder: 0, cls: 'input'},
-            {id: 't4plant', title: 'T4 Plant', type: 'number', placeholder: 0, cls: 'input'},
-            {id: 't5plant', title: 'T5 Plant', type: 'number', placeholder: 0, cls: 'input'}
-        ]
-    },
-    fishCalculator: {
-        title: <h4>Fish Cost</h4>,
-        stateKey: 'fish',
-        reducer: fishReducer,
-        cols: [
-            {id: 't1fish', title: 'T1 Fish', type: 'number', placeholder: 0, cls: 'input'},
-            {id: 't2fish', title: 'T2 Fish', type: 'number', placeholder: 0, cls: 'input'},
-            {id: 't3fish', title: 'T3 Fish', type: 'number', placeholder: 0, cls: 'input'},
-            {id: 't4fish', title: 'T4 Fish', type: 'number', placeholder: 0, cls: 'input'},
-            {id: 't5fish', title: 'T5 Fish', type: 'number', placeholder: 0, cls: 'input'}
-        ]
-    }
+
+// set up resource cost configuration
+let resources = {
+    wood: {label: 'Wood', stateKey: 'wood'},
+    ore: {label: 'Ore', stateKey: 'ore'},
+    plant: {label: 'Plant', stateKey: 'plant'},
+    fish: {label: 'Fish', stateKey: 'fish'}
 };
-
-const building_configs = _.map(_.keys(building_costs), (building_id) => {
-//const building_configs = _.map(['locator', 'mine'], (building_id) => {
-    const building = building_costs[building_id];
-    let ret = {
-        title: <h4>{building.label}</h4>,
-        stateKey: building_id,
-        reducer: buildingReducers[building_id],
+let resourceReducerHelper = (stateKey, state, action) => {
+    if(action.stateKey!=stateKey || !action.valueKey) return state||defaultState[stateKey];
+    let newState = Object.assign({}, state);
+    newState[action.valueKey] = action.value||0;
+    return newState;
+};
+let resourceCostCalculators = {};
+_.each(_.values(resources), (resource) => {
+    resourceCostCalculators[resource.stateKey] = {
+        title: <h4>{resource.label}</h4>,
+        stateKey: resource.stateKey,
+        reducer: _.partial(resourceReducerHelper, resource.stateKey),
         cols: [
-            {id: ''+building_id+'_'+'start', title: '# Start', type: 'number', placeholder: 0, cls: 'input'},
-            {id: ''+building_id+'_'+'finish', title: '# Finished', type: 'number', placeholder: 0, cls: 'input'}
+            {id: 't1'+resource.stateKey, title: 'T1 '+resource.label, type: 'number', placeholder: 0, cls: 'input', stateKey: resource.stateKey, valueKey: 't1'},
+            {id: 't2'+resource.stateKey, title: 'T2 '+resource.label, type: 'number', placeholder: 0, cls: 'input', stateKey: resource.stateKey, valueKey: 't2'},
+            {id: 't3'+resource.stateKey, title: 'T3 '+resource.label, type: 'number', placeholder: 0, cls: 'input', stateKey: resource.stateKey, valueKey: 't3'},
+            {id: 't4'+resource.stateKey, title: 'T4 '+resource.label, type: 'number', placeholder: 0, cls: 'input', stateKey: resource.stateKey, valueKey: 't4'},
+            {id: 't5'+resource.stateKey, title: 'T5 '+resource.label, type: 'number', placeholder: 0, cls: 'input', stateKey: resource.stateKey, valueKey: 't5'}
         ]
     }
-
-    const labels = _.map(_.keys(building.cost), (label) => {
-        const cost = building.cost;
-        return {id: label, title: label, cls: 'label'};
-    });
-    ret.cols = ret.cols.concat(labels);
-
-    return ret;
 });
 
+
+// composable components
 const InputElement = React.createClass({
     handleChange(event) {
         let newValue = parseInt(event.target.value);
-        this.props.onInputChange(this.props.id, newValue);
+        this.props.onInputChange(this.props.id, this.props.stateKey, this.props.valueKey, newValue);
     },
     render() {
         return (<div className='col-md-1'>
@@ -511,7 +435,7 @@ const InputElement = React.createClass({
     }
 });
 const StatefulInputElement = ReactRedux.connect(
-    (state, ownProps) => {return {value: state[ownProps.stateKey][ownProps.id]}}
+    (state, ownProps) => {return {value: state[ownProps.stateKey][ownProps.valueKey]}}
 )(InputElement);
 const ValueHolderDiv = ({id, value}) => {
     return <div id={id} className='col-md-1'>{value}</div>;
@@ -537,13 +461,13 @@ const Calculator = ({stateKey, onInputChange, title, cols}) => {
         </div>
     </div>;
 };
-// XXX input_id, action.type & state.stateKey.___ need to match but should be different
+
 const StatefulCalculator = ReactRedux.connect(
     (state, ownProps) => {return state[ownProps.stateKey]},
-    (dispatch) => {return {onInputChange: (id, value) => {dispatch({type: id, value: value})}}}
+    (dispatch) => {return {onInputChange: (id, stateKey, valueKey, value) => {dispatch({type: id, stateKey: stateKey, valueKey: valueKey, value: value})}}}
 )(Calculator);
 
-
+// populate the reducers
 const reducers = _.reduce(_.values(configs), (accum, config) => {
     accum[config.stateKey] = config.reducer;
     return accum;
@@ -552,15 +476,16 @@ _.each(resourceCostCalculators, (config) => {
     reducers[config.stateKey] = config.reducer;
 });
 _.each(_.keys(buildingReducers), (key) => {
-//_.each(['locator', 'mine'], (key) => {
     reducers[key] = buildingReducers[key];
 });
-//let store = Redux.createStore(Redux.combineReducers(reducers));
-let store = Redux.createStore(Redux.combineReducers(reducers), defaultState, 
-    window.devToolsExtension && window.devToolsExtension()
-);
+let store = null;
+let combinedReducers = Redux.combineReducers(reducers);
+// DEBUG MODE?
+if(window.devToolsExtension) store = Redux.createStore(combinedReducers, defaultState, window.devToolsExtension && window.devToolsExtension());
+else store = Redux.createStore(combinedReducers);
 
 
+// display the config'd components
 const ResourceCosts = ({resourceCostCalculators}) => {
     return <div>        
         {_.map(resourceCostCalculators, (config) => {
