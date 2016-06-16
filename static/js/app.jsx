@@ -420,9 +420,25 @@ _.each(_.values(resources), (resource) => {
         ]
     }
 });
+// populate the reducers & create the store
+const reducers = _.reduce(_.values(configs), (accum, config) => {
+    accum[config.stateKey] = config.reducer;
+    return accum;
+}, {});
+_.each(resourceCostCalculators, (config) => {
+    reducers[config.stateKey] = config.reducer;
+});
+_.each(_.keys(buildingReducers), (key) => {
+    reducers[key] = buildingReducers[key];
+});
+let store = null;
+let combinedReducers = Redux.combineReducers(reducers);
+// DEBUG MODE?
+if(window.devToolsExtension) store = Redux.createStore(combinedReducers, defaultState, window.devToolsExtension && window.devToolsExtension());
+else store = Redux.createStore(combinedReducers);
 
 
-// composable components
+// Composable components
 const InputElement = React.createClass({
     handleChange(event) {
         let newValue = parseInt(event.target.value);
@@ -461,31 +477,12 @@ const Calculator = ({stateKey, onInputChange, title, cols}) => {
         </div>
     </div>;
 };
-
 const StatefulCalculator = ReactRedux.connect(
     (state, ownProps) => {return state[ownProps.stateKey]},
     (dispatch) => {return {onInputChange: (id, stateKey, valueKey, value) => {dispatch({type: id, stateKey: stateKey, valueKey: valueKey, value: value})}}}
 )(Calculator);
 
-// populate the reducers
-const reducers = _.reduce(_.values(configs), (accum, config) => {
-    accum[config.stateKey] = config.reducer;
-    return accum;
-}, {});
-_.each(resourceCostCalculators, (config) => {
-    reducers[config.stateKey] = config.reducer;
-});
-_.each(_.keys(buildingReducers), (key) => {
-    reducers[key] = buildingReducers[key];
-});
-let store = null;
-let combinedReducers = Redux.combineReducers(reducers);
-// DEBUG MODE?
-if(window.devToolsExtension) store = Redux.createStore(combinedReducers, defaultState, window.devToolsExtension && window.devToolsExtension());
-else store = Redux.createStore(combinedReducers);
-
-
-// display the config'd components
+// display configured components
 const ResourceCosts = ({resourceCostCalculators}) => {
     return <div>        
         {_.map(resourceCostCalculators, (config) => {
@@ -501,7 +498,6 @@ const KingdomCalculator = (props) => {
         })}
     </div>
 };
-
 const Container = React.createClass({
     getInitialState() {
         return {currentTab: 'misc'};
