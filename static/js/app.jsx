@@ -312,10 +312,10 @@ const luckReducer = (state=defaultState.luckCalculator, action) => {
 
     // state updated, update calculated values
     newState.luckTier1 = newState.luckPersonal + newState.luckKingdom;
-    newState.luckTier2 = (newState.luckTier1 * Math.pow(2/3, 1)).toFixed(2);
-    newState.luckTier3 = (newState.luckTier2 * Math.pow(2/3, 2)).toFixed(2);
-    newState.luckTier4 = (newState.luckTier3 * Math.pow(2/3, 3)).toFixed(2);
-    newState.luckTier5 = (newState.luckTier4 * Math.pow(2/3, 4)).toFixed(2);
+    newState.luckTier2 = (newState.luckTier1 * Math.pow(.67, 1)).toFixed(2);
+    newState.luckTier3 = (newState.luckTier1 * Math.pow(.67, 2)).toFixed(2);
+    newState.luckTier4 = (newState.luckTier1 * Math.pow(.67, 3)).toFixed(2);
+    newState.luckTier5 = (newState.luckTier1 * Math.pow(.67, 4)).toFixed(2);
 
     return newState;
 };
