@@ -191,6 +191,17 @@ let defaultState = {
         workloadRelicCost: 0,
         dropRelicCost: 0,
         luckRelicCost: 0
+    },
+    enchantCalculator: {
+        currentLevel: 3,
+        targetLevel: 15,
+        xpSuccess: 2,
+        xpRemove: 2,
+        meSuccess: 3,
+        meRemove: 1,
+        enchantXPRequired: 11400,
+        enchantTotalEnchants: 2850,
+        enchantMEUsed: 5700
     }
 };
 _.each(_.keys(building_costs), (building_key) => {
@@ -329,7 +340,7 @@ const relicReducer = (state=defaultState.relicCalculator, action) => {
         luckRelicCost: (value) => {newState.luckRelicCost=value;}
     }
     // does the action key match what we expect?
-    if(!action.type || _.indexOf(_.keys(op), action.type) < 0) return state;    
+    if(!action.type || _.indexOf(_.keys(op), action.type) < 0) return state;
     op[action.type](action.value||0);
 
     // state updated, update calculated values
@@ -342,6 +353,21 @@ const relicReducer = (state=defaultState.relicCalculator, action) => {
     total += newState.luckRelicCost * (newState.luckRelicCost - 1) / 2;
 
     newState.relicsSpent = total;
+
+    return newState;
+};
+const enchantReducer = (state=defaultState.enchantCalculator, action) => {
+    let newState = Object.assign({}, state);
+    if(action.stateKey!='enchantCalculator') return state||defaultState.enchantCalculator;
+    newState[action.valueKey] = action.value;
+
+    // state updated, update calculated values
+    let totalXp = _.sum(_.range(newState.currentLevel+1, newState.targetLevel+1)) * 100;
+    let totalAttempts = totalXp / (newState.xpSuccess + newState.xpRemove);
+
+    newState.enchantXPRequired = totalXp;
+    newState.enchantTotalEnchants = totalAttempts;
+    newState.enchantMEUsed = totalAttempts * (newState.meSuccess - newState.meRemove);
 
     return newState;
 };
@@ -388,6 +414,23 @@ const configs = {
             {id: 'dropRelicCost', title: 'Drop% Cost', type: 'number', placeholder: 0, cls: 'input', stateKey: 'relicCalculator', valueKey: 'dropRelicCost'},
             {id: 'luckRelicCost', title: 'Res Luck% Cost', type: 'number', placeholder: 0, cls: 'input', stateKey: 'relicCalculator', valueKey: 'luckRelicCost'},
             {id: 'relicsSpent', title: 'Relics Spent', cls: 'label'}
+        ]
+    },
+    enchantConfig: {
+        title: <div><h4>Enchanting Information</h4><h6>Default:L1 dex</h6></div>,
+        stateKey: 'enchantCalculator',
+        reducer: enchantReducer,
+        cols: [
+            {id: 'enchCurrentLevel', title: 'CurrentLevel', type: 'number', placeholder: 0, cls: 'input', stateKey: 'enchantCalculator', valueKey: 'currentLevel'},
+            {id: 'enchTargetLevel', title: 'Target Level', type: 'number', placeholder: 0, cls: 'input', stateKey: 'enchantCalculator', valueKey: 'targetLevel'},
+            {id: 'enchXPSuccess', title: 'XP per Success', type: 'number', placeholder: 0, cls: 'input', stateKey: 'enchantCalculator', valueKey: 'xpSuccess'},
+            {id: 'enchXPRemove', title: 'XP per Removal', type: 'number', placeholder: 0, cls: 'input', stateKey: 'enchantCalculator', valueKey: 'xpRemove'},
+            {id: 'enchMESuccess', title: 'ME per Success', type: 'number', placeholder: 0, cls: 'input', stateKey: 'enchantCalculator', valueKey: 'meSuccess'},
+            {id: 'enchMERemove', title: 'ME per Removal', type: 'number', placeholder: 0, cls: 'input', stateKey: 'enchantCalculator', valueKey: 'meRemove'},
+
+            {id: 'enchantXPRequired', title: 'XP Required', cls: 'label'},
+            {id: 'enchantTotalEnchants', title: 'Total Enchants', cls: 'label'},
+            {id: 'enchantMEUsed', title: 'ME Used', cls: 'label'}
         ]
     }
 };
