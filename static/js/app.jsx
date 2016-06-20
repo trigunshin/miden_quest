@@ -202,13 +202,18 @@ let defaultState = {
         enchantXPRequired: 11400,
         enchantTotalEnchants: 2850,
         enchantMEUsed: 5700
-    }
+    },
+    advLevel: {level: 0},
+    survival: {level: 0},
+    weapons: {level: 0},
+    armor: {level: 0}
 };
 _.each(_.keys(building_costs), (building_key) => {
     defaultState[building_key] = {};
     defaultState[building_key]['start'] = 0;
     defaultState[building_key]['finish'] = 0;
 });
+
 
 // set up kingdom building configs
 const buildingReducerHelper = (key, state, action) => {
@@ -261,7 +266,7 @@ _.each(_.keys(building_costs), (building_key) => {
     }, building_key);
 });
 
-const building_configs = _.map(_.keys(building_costs), (building_id) => {
+const buildingCostCalculators = _.map(_.keys(building_costs), (building_id) => {
     const building = building_costs[building_id];
     let ret = {
         title: <h4>{building.label}</h4>,
@@ -371,7 +376,7 @@ const enchantReducer = (state=defaultState.enchantCalculator, action) => {
 
     return newState;
 };
-const configs = {
+const miscCostCalculators = {
     dropConfig: {
         title: <h4>Drop Information</h4>,
         stateKey: 'dropCalculator',
@@ -463,16 +468,55 @@ _.each(_.values(resources), (resource) => {
         ]
     }
 });
-// populate the reducers & create the store
-const reducers = _.reduce(_.values(configs), (accum, config) => {
-    accum[config.stateKey] = config.reducer;
-    return accum;
-}, {});
-_.each(resourceCostCalculators, (config) => {
-    reducers[config.stateKey] = config.reducer;
+
+// expeditions
+let expeditionReducerHelper = (stateKey, state, action) => {
+    if(action.stateKey!=stateKey || !action.valueKey) return state||defaultState[stateKey];
+    let newState = Object.assign({}, state);
+    newState[action.valueKey] = action.value||0;
+
+    let level = action.value;
+    newState.t1 = (level*(level+1)/2)*1000;
+    newState.t2 = (Math.max(level-1, 0)*((level-1)+1)/2)*950;
+    newState.t3 = (Math.max(level-2, 0)*((level-2)+1)/2)*900;
+    newState.t4 = (Math.max(level-3, 0)*((level-3)+1)/2)*750;
+    newState.t5 = (Math.max(level-4, 0)*((level-4)+1)/2)*500;
+
+    return newState;
+};
+// set up resource cost configuration
+let expeditions = {
+    armor: {label: 'Wood/Armor', stateKey: 'armor', valueKey: 'level'},
+    weapons: {label: 'Ore/Weapons', stateKey: 'weapons', valueKey: 'level'},
+    survival: {label: 'Plant/Survival', stateKey: 'survival', valueKey: 'level'},
+    advLevel: {label: 'Fish/Adv', stateKey: 'advLevel', valueKey: 'level'}
+};
+let expeditionCostCalculators = {};
+_.each(_.values(expeditions), (expedition) => {
+    expeditionCostCalculators[expedition.stateKey] = {
+        title: <h4>{expedition.label}</h4>,
+        stateKey: expedition.stateKey,
+        reducer: _.partial(expeditionReducerHelper, expedition.stateKey),
+        cols: [
+            {id: expedition.stateKey, title: expedition.label, type: 'number', placeholder: 0, cls: 'input', stateKey: expedition.stateKey, valueKey: expedition.valueKey},
+            {id: 't1', title: 'T1', cls: 'label'}, {id: 't2', title: 'T2', cls: 'label'}, {id: 't3', title: 'T3', cls: 'label'}, {id: 't4', title: 'T4', cls: 'label'}, {id: 't5', title: 'T5', cls: 'label'}
+        ]
+    }
 });
-_.each(_.keys(buildingReducers), (key) => {
-    reducers[key] = buildingReducers[key];
+
+
+// populate the reducers & create the store
+let reducers = {};
+let costCalculators = {
+    resources: resourceCostCalculators,
+    expeditions: expeditionCostCalculators,
+    buildings: buildingCostCalculators,
+    misc: miscCostCalculators
+};
+_.each(costCalculators, (costCalc) => {
+    _.each(costCalc, (config)=> {
+        reducers[config.stateKey] = config.reducer;
+    });
 });
 let store = null;
 let combinedReducers = Redux.combineReducers(reducers);
@@ -526,6 +570,13 @@ const StatefulCalculator = ReactRedux.connect(
 )(Calculator);
 
 // display configured components
+const Expeditions = ({expeditionCostCalculators}) => {
+    return <div>
+        {_.map(expeditionCostCalculators, (config) => {
+            return <StatefulCalculator {...config} />
+        })}
+    </div>;
+};
 const ResourceCosts = ({resourceCostCalculators}) => {
     return <div>        
         {_.map(resourceCostCalculators, (config) => {
@@ -534,9 +585,8 @@ const ResourceCosts = ({resourceCostCalculators}) => {
     </div>;
 };
 const KingdomCalculator = (props) => {
-    const locatorConfig= building_configs[0];
     return <div>
-        {_.map(building_configs, (config) => {
+        {_.map(buildingCostCalculators, (config) => {
             return <StatefulCalculator {...config} />
         })}
     </div>
@@ -554,6 +604,9 @@ const Container = React.createClass({
     setResourceTab() {
         this.setState({currentTab: 'resources'});
     },
+    setExpeditionTab() {
+        this.setState({currentTab: 'expeditions'});
+    },
     render() {
         const currentTab = this.state.currentTab;
         let toRender;
@@ -562,8 +615,10 @@ const Container = React.createClass({
             toRender = <KingdomCalculator/>;
         else if(this.state.currentTab == 'resources')
             toRender = <ResourceCosts resourceCostCalculators={resourceCostCalculators} />;
+        else if(this.state.currentTab == 'expeditions')
+            toRender = <Expeditions expeditionCostCalculators={expeditionCostCalculators} />;
         else
-            toRender = _.map(_.values(configs), (config) => {
+            toRender = _.map(_.values(miscCostCalculators), (config) => {
                 return <StatefulCalculator {...config}/>
             });
         return <ReactRedux.Provider store={store}>
@@ -573,6 +628,7 @@ const Container = React.createClass({
                         <li role="presentation" className={currentTab=='misc' ? "active" : ''} onClick={this.setMiscTab}><a href="#">Misc</a></li>
                         <li role="presentation" className={currentTab=='resources' ? "active" : ''} onClick={this.setResourceTab}><a href="#">Resources</a></li>
                         <li role="presentation" className={currentTab=='kingdom' ? "active" : ''} onClick={this.setKingdomTab}><a href="#">Kingdom</a></li>
+                        <li role="presentation" className={currentTab=='expeditions' ? "active" : ''} onClick={this.setExpeditionTab}><a href="#">Expeditions</a></li>
                     </ul>
                 </div>
                 {toRender}
