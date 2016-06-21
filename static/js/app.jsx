@@ -12,7 +12,7 @@ const InputElement = React.createClass({
     }
 });
 const StatefulInputElement = ReactRedux.connect(
-    (state, ownProps) => {return {value: state[ownProps.stateKey][ownProps.valueKey]}}
+    (state, ownProps) => {if(ownProps.fn) return {value: ownProps.fn(state)}; else return {value: state[ownProps.stateKey][ownProps.valueKey]}}
 )(InputElement);
 // Display non-input data
 const ValueHolderDiv = ({id, value}) => {

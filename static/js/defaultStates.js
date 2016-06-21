@@ -169,10 +169,6 @@ const building_costs = {
 };
 
 let defaultState = {
-    wood: {t1: 0, t2: 0, t3: 0, t4: 0, t5: 0},
-    ore: {t1: 0, t2: 0, t3: 0, t4: 0, t5: 0},
-    plant: {t1: 0, t2: 0, t3: 0, t4: 0, t5: 0},
-    fish: {t1: 0, t2: 0, t3: 0, t4: 0, t5: 0},
     dropCalculator: {
         tsDropRate: 1,
         tsSecondsPer: 5,
@@ -202,11 +198,13 @@ let defaultState = {
         enchantTotalEnchants: 2850,
         enchantMEUsed: 5700
     },
-    expeditions: {adventurer: 0, weapons: 0, armor: 0, survival: 0},
-    advLevel: {level: 0},
-    survival: {level: 0},
-    weapons: {level: 0},
-    armor: {level: 0}
+    resources: {
+        wood: {t1: 0, t2: 0, t3: 0, t4: 0, t5: 0},
+        ore: {t1: 0, t2: 0, t3: 0, t4: 0, t5: 0},
+        plant: {t1: 0, t2: 0, t3: 0, t4: 0, t5: 0},
+        fish: {t1: 0, t2: 0, t3: 0, t4: 0, t5: 0}
+    },
+    expeditions: {adventurer: 0, weapons: 0, armor: 0, survival: 0}
 };
 _.each(_.keys(building_costs), (building_key) => {
     defaultState[building_key] = {};
