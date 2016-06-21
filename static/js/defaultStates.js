@@ -212,3 +212,4 @@ _.each(_.keys(building_costs), (building_key) => {
     defaultState[building_key]['start'] = 0;
     defaultState[building_key]['finish'] = 0;
 });
+const tiers = ['t1', 't2', 't3', 't4', 't5'];

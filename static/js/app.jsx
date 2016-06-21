@@ -1,4 +1,5 @@
 // Composable components
+//Display/input data
 const InputElement = React.createClass({
     handleChange(event) {
         let newValue = parseInt(event.target.value);
@@ -13,12 +14,15 @@ const InputElement = React.createClass({
 const StatefulInputElement = ReactRedux.connect(
     (state, ownProps) => {return {value: state[ownProps.stateKey][ownProps.valueKey]}}
 )(InputElement);
+// Display non-input data
 const ValueHolderDiv = ({id, value}) => {
     return <div id={id} className='col-md-1'>{value}</div>;
 };
 const StatefulDiv = ReactRedux.connect(
-    (state, ownProps) => {return {value: state[ownProps.stateKey][ownProps.id]}}
+    (state, ownProps) => {if(ownProps.fn) return {value: ownProps.fn(state)}; else return {value: state[ownProps.stateKey][ownProps.id]}}
 )(ValueHolderDiv);
+
+// Formatted input/outputs
 const Calculator = ({stateKey, onInputChange, title, cols}) => {
     return <div>
         <div className='row'>
@@ -32,7 +36,7 @@ const Calculator = ({stateKey, onInputChange, title, cols}) => {
         <div className='row'>
             {_.map(cols, (col) => {
                 if(col.type == 'number') return <StatefulInputElement {...col} onInputChange={onInputChange} stateKey={stateKey} />;
-                else return <StatefulDiv id={col.id} stateKey={stateKey} />;
+                else return <StatefulDiv {...col} stateKey={stateKey} />;
             })}
         </div>
     </div>;
@@ -42,7 +46,7 @@ const StatefulCalculator = ReactRedux.connect(
     (dispatch) => {return {onInputChange: (id, stateKey, valueKey, value) => {dispatch({type: id, stateKey: stateKey, valueKey: valueKey, value: value})}}}
 )(Calculator);
 
-// display configured components
+// Higher order components
 const Expeditions = ({expeditionCostCalculators}) => {
     return <div>
         {_.map(expeditionCostCalculators, (config) => {
