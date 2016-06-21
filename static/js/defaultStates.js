@@ -202,6 +202,7 @@ let defaultState = {
         enchantTotalEnchants: 2850,
         enchantMEUsed: 5700
     },
+    expeditions: {adventurer: 0, weapons: 0, armor: 0, survival: 0},
     advLevel: {level: 0},
     survival: {level: 0},
     weapons: {level: 0},
