@@ -2,7 +2,7 @@
 const dropReducer = (state=defaultState.dropCalculator, action) => {
     let newState = Object.assign({}, state);
     const op = {
-        tsDropRate: (value) => {newState.tsDropRate=value;},
+        tsDropRate: (value) => {newState.tsDropRate=1;},
         tsSecondsPer: (value) => {newState.tsSecondsPer=value;},
         relicDropRate: (value) => {newState.relicDropRate=value;},
         gemDropRate: (value) => {newState.gemDropRate=value;},

@@ -3,7 +3,7 @@
 // @namespace https://github.com/trigunshin/miden_quest
 // @description MQO resource tracker; need to run clearTSResults() to reset tile% after moving
 // @homepage https://trigunshin.github.com/miden_quest
-// @version 9
+// @version 10
 // @downloadURL http://trigunshin.github.io/miden_quest/track_resources.js
 // @updateURL http://trigunshin.github.io/miden_quest/track_resources.js
 // @include http://midenquest.com/Game.aspx
@@ -26,7 +26,7 @@ This *should* be compatible with Ryalane's script if Ryalane's script loads firs
 
 TODO
 	track global bonus?
-	fix data_reset in tampermonkey
+	fix data_reset in tampermonkey?
 //*/
 // preferences; data is still tracked, this only affects output
 var outputItems = true;
@@ -51,8 +51,6 @@ var tsResults = {
 	xp: 0,
 	taxedActions: 0,
 	items: 0,
-	regularItems: 0,
-	scoutingItems: 0,
 	questActive: false,
 	questActions: 0,
 	questItems: 0,
@@ -99,15 +97,14 @@ var tsResults = {
 		goldTotal: 0,
 		gemDrop: 0,
 		relicDrop: 0,
-		relicTotal: 0
+		relicTotal: 0,
+		relicDouble: 0
 	}
 };
 function clearTSResults() {
 	console.info('clearing results');
 	tsResults.actions = 0;
 	tsResults.items = 0;
-	tsResults.regularItems = 0;
-	tsResults.scoutingItems = 0;
 	tsResults.questActive = false;
 	tsResults.questActions = 0;
 	tsResults.questItems = 0;
@@ -122,7 +119,8 @@ function clearTSResults() {
 		goldTotal: 0,
 		gemDrop: 0,
 		relicDrop: 0,
-		relicTotal: 0
+		relicTotal: 0,
+		relicDouble: 0
 	};
 	tsResults.xp = 0;
 
@@ -153,6 +151,7 @@ function handleQuestItem(msg) {
 	}
 }
 function handleItemDrop(msg) {
+	tsResults.items += 1;
 	if(printItemDrops) console.info(Date(), msg);
 
 	// TODO better method than this?
@@ -183,6 +182,8 @@ function handleItemDrop(msg) {
 		tsResults.itemInfo.magicElementsDrop += 1;
 		tsResults.itemInfo.magicElementsTotal += count;
 	}
+
+	if(msg.indexOf('doubled') > -1) tsResults.relicDouble += 1;
 }
 function parsePrimaryTS(msg, tsResults, tsKey, wasTaxed) {
 	var patterns = tsResults[tsKey].tracker;
@@ -226,12 +227,6 @@ function parseTSLog(datum) {
 	if(channel == 3) {
 		// track quest drops separately
 		if(msg.indexOf('quest') > 0) return handleQuestItem(msg);
-		// scouting vs normal
-		if(msg.indexOf('*') > -1) tsResults.scoutingItems += 1;
-		else tsResults.regularItems += 1;
-
-		// track the total in addition to ts/scout
-		tsResults.items += 1;
 		return handleItemDrop(msg);
 	} else if(channel == 2) {
 		// skip level up message before counting the action
@@ -278,11 +273,6 @@ function addTierInfo(tsResults, outputArgs) {
 		't5:', tsResults[5].gained,
 		'&nbsp;', '&nbsp;']);
 }
-function addScoutingItemInfo(tsResults, outputArgs) {
-	return outputArgs.concat([
-		'regularItem%:', (100*tsResults.regularItems/tsResults.actions).toFixed(2),
-		'scoutItem%:', (100*tsResults.scoutingItems/tsResults.actions).toFixed(2)]);
-}
 function addItemOutput(tsResults, outputArgs) {
 	return outputArgs.concat([
 		'&nbsp;', '&nbsp;',
@@ -303,6 +293,7 @@ function addItemOutput(tsResults, outputArgs) {
 		'Total ME:', tsResults.itemInfo.magicElementsTotal,
 		'Total Gold:', tsResults.itemInfo.goldTotal,
 		'Total Relics:', tsResults.itemInfo.relicTotal,
+		'2x Relic %:', (tsResults.itemInfo.relicDouble/tsResults.itemInfo.relicDrop).toFixed(2),
 		'&nbsp;', '&nbsp;']);
 }
 function addSalesInfo(tsResults, outputArgs) {
@@ -364,7 +355,6 @@ function updateOutput(results, msg) {
 	else if(outputTiers && !salesActive && scoutsActive) outputArgs = addScoutsInfo(tsResults, outputArgs);
 
 	outputArgs = outputArgs.concat(['&nbsp;', '&nbsp;', 'item%:', (100*tsResults.items/tsResults.actions).toFixed(2)]);
-	if(scoutsActive) outputArgs = addScoutingItemInfo(tsResults, outputArgs);
 
 	if(outputItems) outputArgs = addItemOutput(tsResults, outputArgs);
 	if(outputQuests) outputArgs = outputArgs.concat(['quest%:', (100*tsResults.questItems/tsResults.questActions).toFixed(2)]);
