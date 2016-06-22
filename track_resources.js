@@ -3,7 +3,7 @@
 // @namespace https://github.com/trigunshin/miden_quest
 // @description MQO resource tracker; need to run clearTSResults() to reset tile% after moving
 // @homepage https://trigunshin.github.com/miden_quest
-// @version 10
+// @version 11
 // @downloadURL http://trigunshin.github.io/miden_quest/track_resources.js
 // @updateURL http://trigunshin.github.io/miden_quest/track_resources.js
 // @include http://midenquest.com/Game.aspx
@@ -85,7 +85,10 @@ var tsResults = {
 		tracker: /(\d+) landmark/,
 		total: 0,
 		taxed: 0,
-		gained: 0
+		gained: 0,
+		relicGained: 0,
+		relicDouble: 0,
+		relicDrop: 0
 	},
 	itemInfo: {
 		equipDrop: 0,
@@ -131,6 +134,9 @@ function clearTSResults() {
 	tsResults.scouts.total = 0;
 	tsResults.scouts.taxed = 0;
 	tsResults.scouts.gained = 0;
+	tsResults.scouts.relicGained = 0;
+	tsResults.scouts.relicDouble = 0;
+	tsResults.scouts.relicDrop = 0;
 
 	for(var i=1, iLen=6; i<iLen;i++) {
 		tsResults[i] = {drop: 0, total: 0, gained: 0, taxed: 0};
@@ -183,7 +189,7 @@ function handleItemDrop(msg) {
 		tsResults.itemInfo.magicElementsTotal += count;
 	}
 
-	if(msg.indexOf('doubled') > -1) tsResults.relicDouble += 1;
+	if(msg.indexOf('doubled') > -1) tsResults.itemInfo.relicDouble += 1;
 }
 function parsePrimaryTS(msg, tsResults, tsKey, wasTaxed) {
 	var patterns = tsResults[tsKey].tracker;
@@ -211,6 +217,14 @@ function parseScouts(msg, tsResults, wasTaxed) {
 	if(wasTaxed) tsResults.scouts.taxed += marksEarned;
 	else tsResults.scouts.gained += marksEarned;
 }
+function parseScoutResourceRelic(msg) {
+	var count = 1;
+	if(msg.indexOf('a relic') < 0) count = 2;
+
+	tsResults.scouts.relicGained += count;
+	tsResults.scouts.relicDrop += 1;
+	if(count==2) tsResults.scouts.relicDouble += 1;
+}
 function parseTSLog(datum) {
 	var arr = datum.split('|');
 	if (arr[0] != 'NLOG') {return;}
@@ -231,6 +245,8 @@ function parseTSLog(datum) {
 	} else if(channel == 2) {
 		// skip level up message before counting the action
 		if(msg.indexOf('gained a new tradeskill level') > -1) return;
+		// scouting's relic gain is in resource log now
+		if(msg.indexOf('relic') > -1) return parseScoutResourceRelic(msg);
 
 		tsResults.actions += 1;
 		if(tsResults.questActive) tsResults.questActions += 1;
@@ -250,7 +266,8 @@ function parseTSLog(datum) {
 		} else if(msg.indexOf('You earned') >= 0) {
 			parseSales(msg, tsResults, wasTaxed);
 		} else if(msg.indexOf('You scouted') >= 0) {
-			parseScouts(msg, tsResults, wasTaxed);
+			// skip the "didn't find any" message
+			if(msg.indexOf('find any') < 0) parseScouts(msg, tsResults, wasTaxed);
 		}
 
 		updateOutput(tsResults, msg);
@@ -310,6 +327,9 @@ function addScoutsInfo(tsResults, outputArgs) {
 	return outputArgs.concat([
 		'Scouts:', tsResults.scouts.gained,
 		'Avg Scout:', avgScout.toFixed(2),
+		'Scout Relics:', tsResults.scouts.relicGained,
+		'Scout 2x Relic:', tsResults.scouts.relicDouble/tsResults.scouts.relicDrop,
+		'Actions/Relic Drop', tsResults.actions/tsResults.scouts.relicDrop,
 		'1x Estimate:', (avgScout * normalAverageMultiplier).toFixed(2),
 		'4x Estimate:', (avgScout * quadAverageMultiplier).toFixed(2),
 		]);
