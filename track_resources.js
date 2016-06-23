@@ -333,7 +333,7 @@ function addScoutsInfo(tsResults, outputArgs) {
 		'Scout 2x Relic%:', (tsResults.scouts.relicDouble/tsResults.scouts.relicDrop*100).toFixed(2),
 		'Actions/Relic', (tsResults.actions/tsResults.scouts.relicGained).toFixed(2),
 		'Relics/Action', (tsResults.scouts.relicGained/tsResults.actions).toFixed(2),
-		'&nbsp;', '&nbsp;'
+		'&nbsp;', '&nbsp;',
 		'1x Estimate:', (avgScout * normalAverageMultiplier).toFixed(2),
 		'4x Estimate:', (avgScout * quadAverageMultiplier).toFixed(2)
 	]);
