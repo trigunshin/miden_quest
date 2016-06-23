@@ -3,7 +3,7 @@
 // @namespace https://github.com/trigunshin/miden_quest
 // @description MQO resource tracker; need to run clearTSResults() to reset tile% after moving
 // @homepage https://trigunshin.github.com/miden_quest
-// @version 12
+// @version 13
 // @downloadURL http://trigunshin.github.io/miden_quest/track_resources.js
 // @updateURL http://trigunshin.github.io/miden_quest/track_resources.js
 // @include http://midenquest.com/Game.aspx
@@ -25,6 +25,7 @@ option instead of the "Top" frame option at the top-left part of the console.
 This *should* be compatible with Ryalane's script if Ryalane's script loads first.
 
 TODO
+	expand/collapse (tampermonkey too)
 	track global bonus?
 	fix data_reset in tampermonkey?
 //*/
@@ -41,6 +42,7 @@ var logText = [];
 var tsXPRegex = /(\d+) skill exp/;
 var questItemRegex = /(\d+) \/ (\d+)/;
 var itemDropCountRegex = /^\[.+\] Found (\d+)/;
+var scoutRelicRegex = / (\d+) relics/;
 var resourceListId = 'resourceLogList';
 
 var normalAverageMultiplier = 60/5*60;
@@ -218,12 +220,12 @@ function parseScouts(msg, tsResults, wasTaxed) {
 	else tsResults.scouts.gained += marksEarned;
 }
 function parseScoutResourceRelic(msg) {
-	var count = 1;
-	if(msg.indexOf('a relic') < 0) count = 2;
+	var count = parseInt(msg.match(scoutRelicRegex)[1]);
+	if(msg.indexOf('a relic') >= 0) count = 1;
 
 	tsResults.scouts.relicGained += count;
 	tsResults.scouts.relicDrop += 1;
-	if(count==2) tsResults.scouts.relicDouble += 1;
+	if(msg.indexOf('double') >= 0) tsResults.scouts.relicDouble += 1;
 }
 function parseTSLog(datum) {
 	var arr = datum.split('|');
@@ -328,11 +330,11 @@ function addScoutsInfo(tsResults, outputArgs) {
 		'Scouts:', tsResults.scouts.gained,
 		'Avg Scout:', avgScout.toFixed(2),
 		'Scout Relics:', tsResults.scouts.relicGained,
-		'Scout 2x Relic:', (tsResults.scouts.relicDouble/tsResults.scouts.relicDrop).toFixed(2),
+		'Scout 2x Relic%:', (tsResults.scouts.relicDouble/tsResults.scouts.relicDrop*100).toFixed(2),
 		'Actions/Relic Drop', (tsResults.actions/tsResults.scouts.relicDrop).toFixed(2),
 		'1x Estimate:', (avgScout * normalAverageMultiplier).toFixed(2),
-		'4x Estimate:', (avgScout * quadAverageMultiplier).toFixed(2),
-		]);
+		'4x Estimate:', (avgScout * quadAverageMultiplier).toFixed(2)
+	]);
 }
 function addTaxPercent(tsResults, outputArgs) {
 	return outputArgs.concat([
