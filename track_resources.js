@@ -3,7 +3,7 @@
 // @namespace https://github.com/trigunshin/miden_quest
 // @description MQO resource tracker; need to run clearTSResults() to reset tile% after moving
 // @homepage https://trigunshin.github.com/miden_quest
-// @version 14
+// @version 15
 // @downloadURL http://trigunshin.github.io/miden_quest/track_resources.js
 // @updateURL http://trigunshin.github.io/miden_quest/track_resources.js
 // @include http://midenquest.com/Game.aspx
@@ -332,6 +332,8 @@ function addScoutsInfo(tsResults, outputArgs) {
 		'Scout Relics:', tsResults.scouts.relicGained,
 		'Scout 2x Relic%:', (tsResults.scouts.relicDouble/tsResults.scouts.relicDrop*100).toFixed(2),
 		'Actions/Relic', (tsResults.actions/tsResults.scouts.relicGained).toFixed(2),
+		'Relics/Action', (tsResults.scouts.relicGained/tsResults.actions).toFixed(2),
+		'&nbsp;', '&nbsp;'
 		'1x Estimate:', (avgScout * normalAverageMultiplier).toFixed(2),
 		'4x Estimate:', (avgScout * quadAverageMultiplier).toFixed(2)
 	]);
