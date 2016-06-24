@@ -165,6 +165,16 @@ const building_costs = {
         },
         upkeep: 125,
         label: 'Inn'
+    },
+    workshop: {
+        cost: {
+            't2 Fish': {base: base_costs.t2, factor: 1.35},
+            't4 Ore': {base: base_costs.t4, factor: 1.35},
+            't4 Fish': {base: base_costs.t4, factor: 1.35},
+            't5 Wood': {base: base_costs.t5, factor: 1.35},
+        },
+        upkeep: 125,
+        label: 'Workshop'
     }
 };
 
