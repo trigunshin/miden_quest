@@ -106,14 +106,15 @@ const StatefulCalculator = ReactRedux.connect(
 
 // Higher order components
 const Tradeskills = ({tsCalculators}) => {
+    console.info('ts props', this);
     return <div>
         <div className='row'>
             <div className='col-sm-2'>
                 <StatefulSelectElement options={tradeskillNames} stateKey={'currentTS'} fn={(state)=>{return state.ts.currentTS;}} />
             </div>
         </div>
-        {_.map(props.tsCalculators, (config) => {
-            return <LStatefulCalculator {...config} />
+        {_.map(tsCalculators, (config) => {
+            return <FnStatefulCalculator {...config} />
         })}
     </div>;
 };

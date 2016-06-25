@@ -3,13 +3,18 @@
 /*
 
 TODO:
-    switch between
-        gathering, mining, logging, fishing, scouting, selling
-
-    selling:
-        extra field for gold/action
-    scouting:
-        extra fields for landmarks/action, actions/relic and relics/action
+    √switch between
+    √    gathering, mining, logging, fishing, scouting, selling
+    make switch hide unused divs
+        others:
+            hide the total field
+        selling:
+            extra field for gold/action
+        scouting:
+            extra fields for landmarks/action, actions/relic and relics/action
+    tie relic boosts on TS page in with fields on Misc page
+    add a fn layer to allow for x10 luck/res% forecasting
+        ie, get state then call a sub-function, not get state & immediately do the calcs
 
 
 each input should have a 'a.b.c' state key
@@ -68,9 +73,38 @@ function getTierOutput(tsPrefix, tier, state) {
 }
 function getTotalOutput(tsPrefix, tiers, state) {
     let ret = _.sum(_.map(tiers, (tier) => {
-        return getTierOutput(tsPrefix, tier, state);
+        return parseInt(getTierOutput(tsPrefix, tier, state));
     }));
-    return ret;
+    return ret.toFixed(2);
+}
+function getWeightedOutput(tsPrefix, tier, state) {
+    let tierOutput = getTierOutput(tsPrefix, tier, state);
+    let tierChance = getTSChance(tsPrefix, tier, state)/100;
+
+    return (tierOutput * tierChance).toFixed(2)||0;
+}
+function getWeightedOutputRelicRes(tsPrefix, tier, state) {
+    let tierOutput = getTierOutput(tsPrefix, tier, state);
+    let tierChance = getTSChance(tsPrefix, tier, state)/100;
+    let relicRes = .15;
+
+    return (tierOutput * tierChance).toFixed(2)||0;
+}
+function getWeightedOutputRelicLuck(tsPrefix, tiers, state) {
+
+    let initial = getTotalWeightedOutput(tsPrefix, tiers, state);
+    //getTotalWeightedOutput
+
+    let tierOutput = getTierOutput(tsPrefix, tier, state);
+    let tierChance = getTSChance(tsPrefix, tier, state)/100;
+    let luck = 3/100 * tierFactors[tier];
+    console.info('luckweight', tierOutput, tierChance, luck);
+    return (tierOutput * (tierChance+luck)).toFixed(2)||0;
+}
+
+
+function getTotalWeightedOutput(tsPrefix, tiers, state) {
+    return _.sum(_.map(tiers, (tier) => {return parseInt(getWeightedOutput(tsPrefix, tier, state));}));
 }
 function getTSAmountOutputCols(ts) {
     let ret = [
@@ -78,7 +112,7 @@ function getTSAmountOutputCols(ts) {
         {title: 'T2', placeholder: 0, cls: 'label', fn: _.partial(getTierOutput, ts.stateKeyPrefix, 't2')},
         {title: 'T3', placeholder: 0, cls: 'label', fn: _.partial(getTierOutput, ts.stateKeyPrefix, 't3')},
         {title: 'T4', placeholder: 0, cls: 'label', fn: _.partial(getTierOutput, ts.stateKeyPrefix, 't4')},
-        {title: 'T5', placeholder: 0, cls: 'label', fn: _.partial(getTierOutput, ts.stateKeyPrefix, 't5')},
+        {title: 'T5', placeholder: 0, cls: 'label', fn: _.partial(getTierOutput, ts.stateKeyPrefix, 't5')}
     ];
     //let currentTS = _.get(state, 'ts.currentTS', 'selling');
     //if(currentTS=='scouting') {
@@ -103,18 +137,29 @@ function getTSChanceCols(ts) {
         {title: 'Tile T5', placeholder: 0, cls: 'label', fn: _.partial(getTSChance, ts.stateKeyPrefix, 't5')},
     ];
 }
+function getTSWeightedCols(ts) {
+    return [
+        {title: 'EV T1', placeholder: 0, cls: 'label', fn: _.partial(getWeightedOutput, ts.stateKeyPrefix, 't1')},
+        {title: 'EV T2', placeholder: 0, cls: 'label', fn: _.partial(getWeightedOutput, ts.stateKeyPrefix, 't2')},
+        {title: 'EV T3', placeholder: 0, cls: 'label', fn: _.partial(getWeightedOutput, ts.stateKeyPrefix, 't3')},
+        {title: 'EV T4', placeholder: 0, cls: 'label', fn: _.partial(getWeightedOutput, ts.stateKeyPrefix, 't4')},
+        {title: 'EV T5', placeholder: 0, cls: 'label', fn: _.partial(getWeightedOutput, ts.stateKeyPrefix, 't5')},
+        {title: 'EV Total', placeholder: 0, cls: 'label', fn: _.partial(getTotalWeightedOutput, ts.stateKeyPrefix, tiers)},
+        //{title: 'EV +3% Res', placeholder: 0, cls: 'label', fn: _.partial(getTotalWeightedOutput, ts.stateKeyPrefix, tiers)},
+        //{title: 'EV +3% Luck', placeholder: 0, cls: 'label', fn: _.partial(getWeightedOutputRelicLuck, ts.stateKeyPrefix, tiers)}
+    ];
+}
 let ts = {
     xp: {label: 'XP', stateKeyPrefix: 'ts', cols: getTSXPCols},
     amount: {label: 'Amount', stateKeyPrefix: 'ts', cols: getTSAmountCols},
     luck: {label: 'Luck', stateKeyPrefix: 'ts', cols: getTSChanceCols},
     amountOutput: {label: 'TS Output', stateKeyPrefix: 'ts', cols: getTSAmountOutputCols},
-    //amountOutput: {label: 'TS Output', stateKeyPrefix: 'ts', cols: getTSAmountOutputCols}
-    //load: {label: 'Workload', stateKey: 'ts', tsKey: 'load', cols: getTSXPCols}
+    weightedOutput: {label: 'Output EV', stateKeyPrefix: 'ts', cols: getTSWeightedCols}
 };
 let tsReducerHelper = (state, action) => {
     if(!_.find(actionPrefixes, (pre)=>{return action.type.startsWith(pre);})) return state||defaultState;
     let newState = Object.assign({}, state);
-    return _.set(newState, action.type, action.value);
+    return _.set(newState, action.type, action.value||0);
 };
 let tsCalculators = {};
 _.forIn(ts, (ts, key) => {
@@ -122,7 +167,7 @@ _.forIn(ts, (ts, key) => {
         title: <h4>{ts.label}</h4>,
         stateKey: ts.stateKeyPrefix,
         /*
-        currently this creates 4 'ts' reducers that overwrite each other in reducers.jsx
+        currently this creates N 'ts' reducers that overwrite each other in reducers.jsx
         ideally there would either be a single reducer or the reducers dict would not use stateKey
         //*/
         reducer: tsReducerHelper,
