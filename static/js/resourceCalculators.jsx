@@ -6,9 +6,7 @@ let resources = {
     fish: {label: 'Fish', stateKey: 'resources', resourceKey: 'fish'}
 };
 let resourceReducerHelper = (stateKey, resourceKey, state, action) => {
-    //console.info(stateKey, resourceKey, state, action);
     if(action.stateKey!=stateKey || !action.valueKey) return state||defaultState[stateKey];
-    console.info('if', stateKey, resourceKey, state, action);
     let newState = Object.assign({}, state);
     newState[action.type][action.valueKey] = action.value||0;
     return newState;

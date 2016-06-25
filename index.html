@@ -20,14 +20,15 @@
         buildings = $.get("static/js/buildings.jsx", {dataType: 'text'}),
         miscCalcs = $.get("static/js/miscCalculators.jsx", {dataType: 'text'}),
         resourceCalcs = $.get("static/js/resourceCalculators.jsx", {dataType: 'text'}),
+        tsCalcs = $.get("static/js/tsCalculators.jsx", {dataType: 'text'}),
         expeditionCalcs = $.get("static/js/expeditionCalculators.jsx", {dataType: 'text'}),
         reducers = $.get("static/js/reducers.jsx", {dataType: 'text'}),
         defaultStates = $.getScript("static/js/defaultStates.js"),
-        all   = $.when(jsxMain, defaultStates, buildings, miscCalcs, resourceCalcs, expeditionCalcs, reducers);    // and $.when groups several Deferreds
+        all   = $.when(jsxMain, defaultStates, buildings, miscCalcs, resourceCalcs, tsCalcs, expeditionCalcs, reducers);    // and $.when groups several Deferreds
 
       // example usage - you can do the same for the individual files
       all.done(function () {
-        var data = ''.concat(buildings.responseText, miscCalcs.responseText, resourceCalcs.responseText, expeditionCalcs.responseText, reducers.responseText, jsxMain.responseText);
+        var data = ''.concat(buildings.responseText, miscCalcs.responseText, resourceCalcs.responseText, tsCalcs.responseText, expeditionCalcs.responseText, reducers.responseText, jsxMain.responseText);
 
         var output = Babel.transform(data, {presets: ['es2015', 'react']}).code;
         // Create a new script tag of `javascript` type

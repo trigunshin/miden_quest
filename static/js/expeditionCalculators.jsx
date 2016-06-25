@@ -26,7 +26,7 @@ function expeditionResourceCost(stateKey, valueKey, baseCost, levelOffset, state
 }
 function expeditionGoldCost(stateKey, valueKey, resourceKey, state) {
     let exped = state[stateKey];
-    let resCosts = state[resourceKey];
+    let resCosts = state['resources'][resourceKey];
     let levelCost = _.sum(_.map(tiers, (tier) => {
         let info = expeditionTierInfo[tier];
         let amt = expeditionResourceCost(stateKey, valueKey, info.baseCost, info.levelOffset, state);

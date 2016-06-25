@@ -4,7 +4,8 @@ let costCalculators = {
     resources: resourceCostCalculators,
     expeditions: expeditionCostCalculators,
     buildings: buildingCostCalculators,
-    misc: miscCostCalculators
+    misc: miscCostCalculators,
+    ts: tsCalculators
 };
 _.each(costCalculators, (costCalc) => {
     _.each(costCalc, (config)=> {
