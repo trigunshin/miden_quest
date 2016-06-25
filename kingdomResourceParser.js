@@ -6,7 +6,7 @@ function parseKingdom(msg) {
 	var results = [];
 	var postData = {};
 	var resourceParent = $("div:contains('T1 Wood')").last().parent();
-	var nodes = $(resourceParent).find("div").slice(-72);
+	var nodes = $(resourceParent).find("div").slice(-74);
 	// 4 types * 5 tiers = 20 iterations
 	for(var i=0,iLen=40;i<iLen;i+=2) {
 		var labelNode = nodes[i];
