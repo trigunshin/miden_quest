@@ -9,7 +9,7 @@
 // @include http://midenquest.com/Game.aspx
 // @include http://www.midenquest.com/Game.aspx
 // @include https://www.midenquest.com/Game.aspx
-// @grant none
+// @grant GM_log
 // ==/UserScript==
 
 /*
@@ -410,8 +410,13 @@ function updateUI(outputArgs) {
 	}
 }
 function initializeUI() {
-	$("body").append('<div id="resourceLogContainer" style="position: absolute;top: 0;right: 0;">Resource Log <ul id="resourceLogList"></ul></div>');
+	$("body").append('<div id="resourceLogContainer" style="position: absolute;top: 0;right: 0; width: 210px;"><div>Resource Log <div style="float: right;"><a href="javascript:toggleUI();">[Toggle]</a></div></div> <ul id="resourceLogList" style="display"></ul></div>');
 }
+
+unsafeWindow.toggleUI = function (){
+    $("#resourceLogList").toggle();
+};
+
 function track_resources_onmsg(evt) {
 	track_resources_original_msg(evt);
 	parseTSLog(evt.data);
