@@ -1,11 +1,11 @@
 // populate the reducers & create the store
 let reducers = {};
 let costCalculators = {
-    resources: resourceCostCalculators,
-    expeditions: expeditionCostCalculators,
-    buildings: buildingCostCalculators,
-    misc: miscCostCalculators,
-    ts: tsCalculators
+    resourceCostCalculators,
+    expeditionCostCalculators,
+    buildingCostCalculators,
+    miscCostCalculators,
+    tsCalculators
 };
 _.each(costCalculators, (costCalc) => {
     _.each(costCalc, (config)=> {

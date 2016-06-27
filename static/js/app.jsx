@@ -1,12 +1,17 @@
 //Display/input data
 const FnInputElement = React.createClass({
     handleChange(event) {
-        let newValue = parseInt(event.target.value);
+        let newValue = parseFloat(event.target.value);
         this.props.onInputChange(this.props.stateKey, newValue);
     },
     render() {
+
+        let inp = null;
+        if(this.props.type=='number') {
+            inp = <input type='number' step="0.01" min='0' className="form-control" placeholder={this.props.placeholder} value={this.props.value} onChange={this.handleChange} />
+        }
         return (<div className='col-md-1'>
-            <input type={this.props.type} className="form-control" placeholder={this.props.placeholder} value={this.props.value} onChange={this.handleChange} />
+            {inp}
         </div>);
     }
 });
@@ -60,7 +65,7 @@ const FnStatefulCalculator = ReactRedux.connect(
 //Display/input data
 const InputElement = React.createClass({
     handleChange(event) {
-        let newValue = parseInt(event.target.value);
+        let newValue = parseFloat(event.target.value);
         this.props.onInputChange(this.props.id, this.props.stateKey, this.props.valueKey, newValue);
     },
     render() {
@@ -128,7 +133,7 @@ const Expeditions = ({expeditionCostCalculators}) => {
 const ResourceCosts = ({resourceCostCalculators}) => {
     return <div>        
         {_.map(resourceCostCalculators, (config) => {
-            return <StatefulCalculator {...config} />
+            return <FnStatefulCalculator {...config} />
         })}
     </div>;
 };
