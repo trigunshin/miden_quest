@@ -4,8 +4,8 @@
 // @description MQO resource tracker; need to run clearTSResults() to reset tile% after moving
 // @homepage https://trigunshin.github.com/miden_quest
 // @version 17
-// @downloadURL http://trigunshin.github.io/miden_quest/track_resources.js
-// @updateURL http://trigunshin.github.io/miden_quest/track_resources.js
+// @downloadURL http://trigunshin.github.io/miden_quest/trackResources.user.js
+// @updateURL http://trigunshin.github.io/miden_quest/trackResources.user.js
 // @include http://midenquest.com/Game.aspx
 // @include http://www.midenquest.com/Game.aspx
 // @include https://www.midenquest.com/Game.aspx
