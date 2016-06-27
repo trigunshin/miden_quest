@@ -8,29 +8,7 @@ TODO:
         scouting:
             extra fields for landmarks/action, actions/relic and relics/action
     tie relic boosts on TS page in with fields on Misc page
-
-each input should have a 'a.b.c' state key
-this will use
-    _.get(state, valueKey, 0)
-    _.set(state, valueKey, value)
 //*/
-function getTSXPCols(ts) {
-    return [
-        {title: 'TS Level', type: 'number', placeholder: 0, cls: 'input', stateKey: 'level', fn: (state)=>{return _.get(state, ts.stateKeyPrefix.concat('.level'));}},
-        {title: 'Relic XP', type: 'number', placeholder: 0, cls: 'input', stateKey: 'xp.relic', fn: (state)=>{return _.get(state, ts.stateKeyPrefix.concat('.xp.relic'));}},
-        {title: 'Gem XP', type: 'number', placeholder: 0, cls: 'input', stateKey: 'xp.gem', fn: (state)=>{return _.get(state, ts.stateKeyPrefix.concat('.xp.gem'));}}
-    ];
-}
-function getTSAmountCols(ts) {
-    return [
-        {title: 'TS Level', type: 'number', placeholder: 0, cls: 'input', stateKey: 'level', fn: (state)=>{return _.get(state, ts.stateKeyPrefix.concat('.level'));}},
-        {title: 'Relic %', type: 'number', placeholder: 0, cls: 'input', stateKey: 'amount.relic', fn: (state)=>{return _.get(state, ts.stateKeyPrefix.concat('.amount.relic'));}},
-        {title: 'Work Eff', type: 'number', placeholder: 0, cls: 'input', stateKey: 'amount.we', fn: (state)=>{return _.get(state, ts.stateKeyPrefix.concat('.amount.we'));}},
-        {title: 'Kingdom %', type: 'number', placeholder: 0, cls: 'input', stateKey: 'amount.kingdom', fn: (state)=>{return _.get(state, ts.stateKeyPrefix.concat('.amount.kingdom'));}},
-        {title: 'Gem %', type: 'number', placeholder: 0, cls: 'input', stateKey: 'amount.gem', fn: (state)=>{return _.get(state, ts.stateKeyPrefix.concat('.amount.gem'));}},
-        {title: 'Global Bonus', type: 'number', placeholder: 1, cls: 'input', stateKey: 'amount.global', fn: (state)=>{return _.get(state, ts.stateKeyPrefix.concat('.amount.global'));}},
-    ];
-}
 
 function _getTSChance(baseLuck, relicLuck, kingdomLuck, tierFactor) {
     return Math.min(100, (baseLuck + (relicLuck + kingdomLuck) * tierFactor).toFixed(3));
@@ -47,7 +25,6 @@ function getTSChance(tsPrefix, tier, state) {
     let args = _.values(_getTSChanceArgs(tsPrefix, tier, state));
     return _getTSChance.apply(this, args);
 }
-
 function _getTierOutput(tsLevel, relicRes, workEff, kingdomBonus, gemBonus, globalBonus, amountFactor, tierFactor) {
     // amountFactor * (Level + Efficiency + Relics) * Kingdom * Gem * Global
     let ret = ((1+tsLevel/100*tierFactor) + (workEff+relicRes)/100*tierFactor) * (1+kingdomBonus/100) * (1+gemBonus/100) * globalBonus * amountFactor;
@@ -114,7 +91,6 @@ function getRelicLuckROI(tsPrefix, tiers, state) {
     ret = _.sum(ret).toFixed(2);
     return ret;
 }
-
 function gemROITier(tsPrefix, tier, state) {
     let args = _getTierOutputArgs(tsPrefix, tier, state);
     args.gem += 1;
@@ -156,8 +132,13 @@ function getGemCost(tsPrefix, tiers, state) {
     return gemCost * nextUpdateCost;
 }
 
-
-function getTSColumns(resType, tiers, ts) {
+// Calculator column generators
+function getTierColumns(tiers, viewFn, ts) {
+    return _.map(tiers, (tier) => {
+        return {title: _.upperFirst(tier), placeholder: 0, cls: 'label', fn: _.partial(viewFn, ts.stateKeyPrefix, tier)};
+    });
+}
+function getTSInputCols(resType, tiers, ts) {
     return _.map(tiers, (tier) => {
         const stateKey = resType.concat(tier);
         const title = _.upperFirst(tier);
@@ -165,86 +146,63 @@ function getTSColumns(resType, tiers, ts) {
         return {title, type: 'number', placeholder: 0, cls: 'input', stateKey, fn};
     });
 }
-
-
-function getTSAmountOutputCols(ts) {
-    let ret = [
-        {title: 'T1', placeholder: 0, cls: 'label', fn: _.partial(getTierOutput, ts.stateKeyPrefix, 't1')},
-        {title: 'T2', placeholder: 0, cls: 'label', fn: _.partial(getTierOutput, ts.stateKeyPrefix, 't2')},
-        {title: 'T3', placeholder: 0, cls: 'label', fn: _.partial(getTierOutput, ts.stateKeyPrefix, 't3')},
-        {title: 'T4', placeholder: 0, cls: 'label', fn: _.partial(getTierOutput, ts.stateKeyPrefix, 't4')},
-        {title: 'T5', placeholder: 0, cls: 'label', fn: _.partial(getTierOutput, ts.stateKeyPrefix, 't5')}
-    ];
-    return ret;
+function getTSXPCols(ts) {
+    let ret = [{title: 'TS Level', type: 'number', placeholder: 0, cls: 'input', stateKey: 'level', fn: (state)=>{return _.get(state, ts.stateKeyPrefix.concat('.level'));}}];
+    return ret.concat(getTSInputCols('xp.', ['relic', 'gem'], ts));
+}
+function getTSAmountCols(ts) {
+    let ret = [{title: 'TS Level', type: 'number', placeholder: 0, cls: 'input', stateKey: 'level', fn: (state)=>{return _.get(state, ts.stateKeyPrefix.concat('.level'));}}];
+    return ret.concat(getTSInputCols('amount.', ['relic', 'gem', 'we', 'kingdom', 'global'], ts));
+}
+function getTSAmountOutputCols(tiers, ts) {
+    return getTierColumns(tiers, getTierOutput, ts)
 }
 function getTSChanceCols(ts) {
-    return [
-        {title: 'Relic Luck', type: 'number', placeholder: 0, cls: 'input', stateKey: 'luck.relic', fn: (state)=>{return _.get(state, ts.stateKeyPrefix.concat('.luck.relic'));}},
-        {title: 'Kingdom Luck', type: 'number', placeholder: 0, cls: 'input', stateKey: 'luck.kingdom', fn: (state)=>{return _.get(state, ts.stateKeyPrefix.concat('.luck.kingdom'));}},
+    let ret = getTSInputCols('luck.', ['relic', 'kingdom'], ts);
+    ret = ret.concat([
         {title: 'Tile T1', type: 'number', placeholder: 0, cls: 'input', stateKey: 'luck.t1', fn: (state)=>{return _.get(state, ts.stateKeyPrefix.concat('.luck.t1'));}},
         {title: 'Tile T2', type: 'number', placeholder: 0, cls: 'input', stateKey: 'luck.t2', fn: (state)=>{return _.get(state, ts.stateKeyPrefix.concat('.luck.t2'));}},
         {title: 'Tile T3', type: 'number', placeholder: 0, cls: 'input', stateKey: 'luck.t3', fn: (state)=>{return _.get(state, ts.stateKeyPrefix.concat('.luck.t3'));}},
         {title: 'Tile T4', type: 'number', placeholder: 0, cls: 'input', stateKey: 'luck.t4', fn: (state)=>{return _.get(state, ts.stateKeyPrefix.concat('.luck.t4'));}},
-        {title: 'Tile T5', type: 'number', placeholder: 0, cls: 'input', stateKey: 'luck.t5', fn: (state)=>{return _.get(state, ts.stateKeyPrefix.concat('.luck.t5'));}},
-        {title: 'Tile T1', placeholder: 0, cls: 'label', fn: _.partial(getTSChance, ts.stateKeyPrefix, 't1')},
-        {title: 'Tile T2', placeholder: 0, cls: 'label', fn: _.partial(getTSChance, ts.stateKeyPrefix, 't2')},
-        {title: 'Tile T3', placeholder: 0, cls: 'label', fn: _.partial(getTSChance, ts.stateKeyPrefix, 't3')},
-        {title: 'Tile T4', placeholder: 0, cls: 'label', fn: _.partial(getTSChance, ts.stateKeyPrefix, 't4')},
-        {title: 'Tile T5', placeholder: 0, cls: 'label', fn: _.partial(getTSChance, ts.stateKeyPrefix, 't5')},
-    ];
+        {title: 'Tile T5', type: 'number', placeholder: 0, cls: 'input', stateKey: 'luck.t5', fn: (state)=>{return _.get(state, ts.stateKeyPrefix.concat('.luck.t5'));}}
+    ]);
+    return ret;
 }
-function getTSWeightedCols(ts) {
-    return [
-        {title: 'EV T1', placeholder: 0, cls: 'label', fn: _.partial(getWeightedOutput, ts.stateKeyPrefix, 't1')},
-        {title: 'EV T2', placeholder: 0, cls: 'label', fn: _.partial(getWeightedOutput, ts.stateKeyPrefix, 't2')},
-        {title: 'EV T3', placeholder: 0, cls: 'label', fn: _.partial(getWeightedOutput, ts.stateKeyPrefix, 't3')},
-        {title: 'EV T4', placeholder: 0, cls: 'label', fn: _.partial(getWeightedOutput, ts.stateKeyPrefix, 't4')},
-        {title: 'EV T5', placeholder: 0, cls: 'label', fn: _.partial(getWeightedOutput, ts.stateKeyPrefix, 't5')},
-        {title: 'EV Total', placeholder: 0, cls: 'label', fn: _.partial(getTotalWeightedOutput, ts.stateKeyPrefix, tiers)}
-    ];
+function getCalculatedLuckCols(tiers, ts) {
+    return getTierColumns(tiers, getTSChance, ts);
 }
-function getRelicResAmountCols(ts) {
-    return [
-        {title: 'T1', placeholder: 0, cls: 'label', fn: _.partial(relicAmountROITier, ts.stateKeyPrefix, 't1')},
-        {title: 'T2', placeholder: 0, cls: 'label', fn: _.partial(relicAmountROITier, ts.stateKeyPrefix, 't2')},
-        {title: 'T3', placeholder: 0, cls: 'label', fn: _.partial(relicAmountROITier, ts.stateKeyPrefix, 't3')},
-        {title: 'T4', placeholder: 0, cls: 'label', fn: _.partial(relicAmountROITier, ts.stateKeyPrefix, 't4')},
-        {title: 'T5', placeholder: 0, cls: 'label', fn: _.partial(relicAmountROITier, ts.stateKeyPrefix, 't5')},
-        {title: 'Total EV +15% Res', placeholder: 0, cls: 'label', fn: _.partial(getRelicAmountROI, ts.stateKeyPrefix, tiers)}
-        // add cost?
-        // add % diff?
-    ];
+function getTSWeightedCols(tiers, ts) {
+    const ret = getTierColumns(tiers, getWeightedOutput, ts);
+    ret.push({title: 'EV Total', placeholder: 0, cls: 'label', fn: _.partial(getTotalWeightedOutput, ts.stateKeyPrefix, tiers)});
+    return ret;
 }
-function getRelicLuckAmountCols(ts) {
-    return [
-        {title: 'T1', placeholder: 0, cls: 'label', fn: _.partial(relicLuckROITier, ts.stateKeyPrefix, 't1')},
-        {title: 'T2', placeholder: 0, cls: 'label', fn: _.partial(relicLuckROITier, ts.stateKeyPrefix, 't2')},
-        {title: 'T3', placeholder: 0, cls: 'label', fn: _.partial(relicLuckROITier, ts.stateKeyPrefix, 't3')},
-        {title: 'T4', placeholder: 0, cls: 'label', fn: _.partial(relicLuckROITier, ts.stateKeyPrefix, 't4')},
-        {title: 'T5', placeholder: 0, cls: 'label', fn: _.partial(relicLuckROITier, ts.stateKeyPrefix, 't5')},
-        {title: 'Total EV +3% Luck', placeholder: 0, cls: 'label', fn: _.partial(getRelicLuckROI, ts.stateKeyPrefix, tiers)}
-    ];
+function getRelicResAmountCols(tiers, ts) {
+    const ret = getTierColumns(tiers, relicAmountROITier, ts);
+    ret.push({title: 'Total EV +15% Res', placeholder: 0, cls: 'label', fn: _.partial(getRelicAmountROI, ts.stateKeyPrefix, tiers)});
+    return ret;
 }
-function getGemCols(ts) {
-    return [
-        {title: 'T1', placeholder: 0, cls: 'label', fn: _.partial(gemROITier, ts.stateKeyPrefix, 't1')},
-        {title: 'T2', placeholder: 0, cls: 'label', fn: _.partial(gemROITier, ts.stateKeyPrefix, 't2')},
-        {title: 'T3', placeholder: 0, cls: 'label', fn: _.partial(gemROITier, ts.stateKeyPrefix, 't3')},
-        {title: 'T4', placeholder: 0, cls: 'label', fn: _.partial(gemROITier, ts.stateKeyPrefix, 't4')},
-        {title: 'T5', placeholder: 0, cls: 'label', fn: _.partial(gemROITier, ts.stateKeyPrefix, 't5')},
-        {title: 'Total Gem +1%', placeholder: 0, cls: 'label', fn: _.partial(getGemROI, ts.stateKeyPrefix, tiers)},
-        {title: 'Gem +1% Cost', placeholder: 0, cls: 'label', fn: _.partial(getGemCost, ts.stateKeyPrefix, tiers)}
-    ];
+function getRelicLuckAmountCols(tiers, ts) {
+    const ret = getTierColumns(tiers, relicLuckROITier, ts);
+    ret.push({title: 'Total EV +3% Luck', placeholder: 0, cls: 'label', fn: _.partial(getRelicLuckROI, ts.stateKeyPrefix, tiers)});
+    return ret;
 }
+function getGemCols(tiers, ts) {
+    const ret = getTierColumns(tiers, gemROITier, ts);
+    ret.push({title: 'Total Gem +1%', placeholder: 0, cls: 'label', fn: _.partial(getGemROI, ts.stateKeyPrefix, tiers)});
+    ret.push({title: 'Gem +1% Cost', placeholder: 0, cls: 'label', fn: _.partial(getGemCost, ts.stateKeyPrefix, tiers)});
+    return ret;
+}
+// Calculator row configs
 let ts = {
     xp: {label: 'XP', stateKeyPrefix: 'ts', cols: getTSXPCols},
     amount: {label: 'Amount', stateKeyPrefix: 'ts', cols: getTSAmountCols},
     luck: {label: 'Luck', stateKeyPrefix: 'ts', cols: getTSChanceCols},
-    amountOutput: {label: 'TS Output', stateKeyPrefix: 'ts', cols: getTSAmountOutputCols},
-    weightedOutput: {label: 'Output EV', stateKeyPrefix: 'ts', cols: getTSWeightedCols},
-    relicAmountOutput: {label: 'Output EV (+15 Relic Amount)', stateKeyPrefix: 'ts', cols: getRelicResAmountCols},
-    relicLuckOutput: {label: 'Output EV (+3 Relic Luck)', stateKeyPrefix: 'ts', cols: getRelicLuckAmountCols},
-    gemOutput: {label: 'Output EV (+1% Gem)', stateKeyPrefix: 'ts', cols: getGemCols}
+    totalLuck: {label: 'Calculated Luck', stateKeyPrefix: 'ts', cols: _.partial(getCalculatedLuckCols, tiers)},
+    amountOutput: {label: 'TS Output', stateKeyPrefix: 'ts', cols: _.partial(getTSAmountOutputCols, tiers)},
+    weightedOutput: {label: 'Output EV', stateKeyPrefix: 'ts', cols: _.partial(getTSWeightedCols, tiers)},
+    relicAmountOutput: {label: 'Output EV (+15 Relic Amount)', stateKeyPrefix: 'ts', cols: _.partial(getRelicResAmountCols, tiers)},
+    relicLuckOutput: {label: 'Output EV (+3 Relic Luck)', stateKeyPrefix: 'ts', cols: _.partial(getRelicLuckAmountCols, tiers)},
+    gemOutput: {label: 'Output EV (+1% Gem)', stateKeyPrefix: 'ts', cols: _.partial(getGemCols, tiers)}
 };
 
 let tsActionPrefixes = ['level', 'currentTS', 'xp', 'amount', 'luck', 'load'];
