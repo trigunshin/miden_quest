@@ -218,7 +218,7 @@ let defaultState = {
     expeditions: {adventurer: 0, weapons: 0, armor: 0, survival: 0},
     ts: {
         currentTS: 'selling',
-        level: 0,
+        level: 1,
         xp: {gem: 0, relic: 0},
         amount: {gem: 0, relic: 0, kingdom: 0, we: 0, global: 1},
         luck: {relic: 0, kingdom: 0, t1: 0, t2: 0, t3: 0, t4: 0, t5: 0}

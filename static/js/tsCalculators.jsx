@@ -63,6 +63,7 @@ function getTotalWeightedOutput(tsPrefix, tiers, state) {
     return _.sum(_.map(tiers, (tier) => {return parseInt(getWeightedOutput(tsPrefix, tier, state));}));
 }
 
+//Relic amount:
 function relicAmountROITier(tsPrefix, tier, state) {
     let args = _getTierOutputArgs(tsPrefix, tier, state);
     args.relic += 15;
@@ -76,7 +77,12 @@ function getRelicAmountROI(tsPrefix, tiers, state) {
     ret = _.sum(ret).toFixed(2);
     return ret;
 }
-
+function getRelicAmountROIDiff(tsPrefix, tiers, state) {
+    const roi = getRelicAmountROI(tsPrefix, tiers, state);
+    const baseValue = getTotalWeightedOutput(tsPrefix, tiers, state);
+    return (roi - baseValue).toFixed(2);
+}
+// Relic luck: per-tier, total, upgrade ROI total, upgrade ROI diff
 function relicLuckROITier(tsPrefix, tier, state) {
     let ret = getTierOutput(tsPrefix, tier, state);
     let args = _getTSChanceArgs(tsPrefix, tier, state);
@@ -91,6 +97,13 @@ function getRelicLuckROI(tsPrefix, tiers, state) {
     ret = _.sum(ret).toFixed(2);
     return ret;
 }
+function getRelicLuckROIDiff(tsPrefix, tiers, state) {
+    const roi = getRelicLuckROI(tsPrefix, tiers, state);
+    const baseValue = getTotalWeightedOutput(tsPrefix, tiers, state);
+    return (roi - baseValue).toFixed(2);
+}
+
+// Gem %
 function gemROITier(tsPrefix, tier, state) {
     let args = _getTierOutputArgs(tsPrefix, tier, state);
     args.gem += 1;
@@ -104,29 +117,41 @@ function getGemROI(tsPrefix, tiers, state) {
     ret = _.sum(ret).toFixed(2);
     return ret;
 }
-
-// cost of gem/relic upgrades
-/*
-have user input relic cost of next relic upgrade
-calculate +xp/res%/luck% from cost (.2/1.5/.3)
-    display value as label instead of input?
-
-x10: val * 10 + 45;
-//*/
-function relicsForUpdate(tsPrefix, state) {
-    return 0;
+function getGemROIDiff(tsPrefix, tiers, state) {
+    const roi = getGemROI(tsPrefix, tiers, state);
+    const baseValue = getTotalWeightedOutput(tsPrefix, tiers, state);
+    return (roi - baseValue).toFixed(2);
 }
-function getRelicCost(tsPrefix, tiers, state) {
-    let relics = relicsForUpdate(tsPrefix, state);
-    let relicCost = parseInt(_.get(state, 'resources.relic'), 0);
-    return relics * relicCost;
+
+// determine ROI efficiency
+function roiDifference(roiFn, tsPrefix, tiers, state) {
+    const roi = roiFn(tsPrefix, tiers, state);
+    const baseValue = getTotalWeightedOutput(tsPrefix, tiers, state);
+    return (roi - baseValue).toFixed(2);
+}
+function costPerROI(roiFn, costFn, tsPrefix, tiers, state) {
+    const roiDiff = roiDifference(roiFn, tsPrefix, tiers, state);
+    const roiCost = costFn(state);
+    return (roiCost/roiDiff).toFixed(2);
+}
+// forecast upgrade prices
+function relicsForUpdate(currentBonus, bonusFactor) {
+    const currentCost = currentBonus / bonusFactor;
+    return currentCost + 1;
+}
+function getRelicCost(tsPrefix, bonusFactor, bonusKey, state) {
+    const numUpgrades = 10;
+    const relicCost = parseInt(_.get(state, 'resources.relic'), 0);
+    const currentBonus = parseFloat(_.get(state, tsPrefix.concat(bonusKey)), 0);
+    const nextRelicUpgrade = relicsForUpdate(currentBonus, bonusFactor) * numUpgrades + _.sum(_.range(numUpgrades));
+    return nextRelicUpgrade * relicCost;
 }
 function gemsForUpdate(tsPrefix, state) {
     let gems = parseInt(_.get(state, tsPrefix.concat('.amount.gem'), 0));
     let nextUpdate = _.floor(gems / 5 + 5);
     return nextUpdate;
 }
-function getGemCost(tsPrefix, tiers, state) {
+function getGemCost(tsPrefix, state) {
     let nextUpdateCost = gemsForUpdate(tsPrefix, state);
     let gemCost = parseInt(_.get(state, 'resources.gem'), 0);
     return gemCost * nextUpdateCost;
@@ -145,6 +170,9 @@ function getTSInputCols(resType, tiers, ts) {
         const fn = (state)=>{return _.get(state, ts.stateKeyPrefix.concat('.', stateKey));};
         return {title, type: 'number', placeholder: 0, cls: 'input', stateKey, fn};
     });
+}
+function getTSRelicCols(ts) {
+    return getTSInputCols('relic.', ['amount', 'xp', 'luck', 'load', 'drop'], ts);
 }
 function getTSXPCols(ts) {
     let ret = [{title: 'TS Level', type: 'number', placeholder: 0, cls: 'input', stateKey: 'level', fn: (state)=>{return _.get(state, ts.stateKeyPrefix.concat('.level'));}}];
@@ -177,23 +205,35 @@ function getTSWeightedCols(tiers, ts) {
     return ret;
 }
 function getRelicResAmountCols(tiers, ts) {
+    const roiCostFn = _.partial(getRelicCost, ts.stateKeyPrefix, relicBonusFactors.amount, '.amount.relic');
     const ret = getTierColumns(tiers, relicAmountROITier, ts);
-    ret.push({title: 'Total EV +15% Res', placeholder: 0, cls: 'label', fn: _.partial(getRelicAmountROI, ts.stateKeyPrefix, tiers)});
+    ret.push({title: 'EV Total', placeholder: 0, cls: 'label', fn: _.partial(getRelicAmountROI, ts.stateKeyPrefix, tiers)});
+    ret.push({title: 'EV Diff', placeholder: 0, cls: 'label', fn: _.partial(roiDifference, getRelicAmountROI, ts.stateKeyPrefix, tiers)});
+    ret.push({title: 'EV Cost', placeholder: 0, cls: 'label', fn: roiCostFn});
+    ret.push({title: 'EV Cost/Diff', placeholder: 0, cls: 'label', fn: _.partial(costPerROI, getRelicAmountROI, roiCostFn, ts.stateKeyPrefix, tiers)});
     return ret;
 }
 function getRelicLuckAmountCols(tiers, ts) {
+    const roiCostFn = _.partial(getRelicCost, ts.stateKeyPrefix, relicBonusFactors.luck, '.luck.relic');
     const ret = getTierColumns(tiers, relicLuckROITier, ts);
-    ret.push({title: 'Total EV +3% Luck', placeholder: 0, cls: 'label', fn: _.partial(getRelicLuckROI, ts.stateKeyPrefix, tiers)});
+    ret.push({title: 'EV Total', placeholder: 0, cls: 'label', fn: _.partial(getRelicLuckROI, ts.stateKeyPrefix, tiers)});
+    ret.push({title: 'EV Diff', placeholder: 0, cls: 'label', fn: _.partial(roiDifference, getRelicLuckROI, ts.stateKeyPrefix, tiers)});
+    ret.push({title: 'EV Cost', placeholder: 0, cls: 'label', fn: roiCostFn});
+    ret.push({title: 'EV Cost/Diff', placeholder: 0, cls: 'label', fn: _.partial(costPerROI, getRelicLuckROI, roiCostFn, ts.stateKeyPrefix, tiers)});
     return ret;
 }
 function getGemCols(tiers, ts) {
+    const roiCostFn = _.partial(getGemCost, ts.stateKeyPrefix);
     const ret = getTierColumns(tiers, gemROITier, ts);
-    ret.push({title: 'Total Gem +1%', placeholder: 0, cls: 'label', fn: _.partial(getGemROI, ts.stateKeyPrefix, tiers)});
-    ret.push({title: 'Gem +1% Cost', placeholder: 0, cls: 'label', fn: _.partial(getGemCost, ts.stateKeyPrefix, tiers)});
+    ret.push({title: 'EV Total', placeholder: 0, cls: 'label', fn: _.partial(getGemROI, ts.stateKeyPrefix, tiers)});
+    ret.push({title: 'EV Diff', placeholder: 0, cls: 'label', fn: _.partial(roiDifference, getGemROI, ts.stateKeyPrefix, tiers)});
+    ret.push({title: 'EV Cost', placeholder: 0, cls: 'label', fn: roiCostFn});
+    ret.push({title: 'EV Cost/Diff', placeholder: 0, cls: 'label', fn: _.partial(costPerROI, getGemROI, roiCostFn, ts.stateKeyPrefix, tiers)});
     return ret;
 }
 // Calculator row configs
 let ts = {
+    // relics: {label: 'Relic Next Upgrade Cost', stateKeyPrefix: 'ts', cols: getTSRelicCols},
     xp: {label: 'XP', stateKeyPrefix: 'ts', cols: getTSXPCols},
     amount: {label: 'Amount', stateKeyPrefix: 'ts', cols: getTSAmountCols},
     luck: {label: 'Luck', stateKeyPrefix: 'ts', cols: getTSChanceCols},
@@ -205,7 +245,7 @@ let ts = {
     gemOutput: {label: 'Output EV (+1% Gem)', stateKeyPrefix: 'ts', cols: _.partial(getGemCols, tiers)}
 };
 
-let tsActionPrefixes = ['level', 'currentTS', 'xp', 'amount', 'luck', 'load'];
+let tsActionPrefixes = ['relic', 'level', 'currentTS', 'xp', 'amount', 'luck', 'load'];
 let tsReducerHelper = (state, action) => {
     if(!_.find(tsActionPrefixes, (pre)=>{return action.type.startsWith(pre);})) return state||defaultState;
     let newState = Object.assign({}, state);
