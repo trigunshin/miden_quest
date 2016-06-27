@@ -212,12 +212,13 @@ let defaultState = {
         wood: {t1: 0, t2: 0, t3: 0, t4: 0, t5: 0},
         ore: {t1: 0, t2: 0, t3: 0, t4: 0, t5: 0},
         plant: {t1: 0, t2: 0, t3: 0, t4: 0, t5: 0},
-        fish: {t1: 0, t2: 0, t3: 0, t4: 0, t5: 0}
+        fish: {t1: 0, t2: 0, t3: 0, t4: 0, t5: 0},
+        gem: 0, relic: 0, me: 0
     },
     expeditions: {adventurer: 0, weapons: 0, armor: 0, survival: 0},
     ts: {
         currentTS: 'selling',
-        level: 0,
+        level: 1,
         xp: {gem: 0, relic: 0},
         amount: {gem: 0, relic: 0, kingdom: 0, we: 0, global: 1},
         luck: {relic: 0, kingdom: 0, t1: 0, t2: 0, t3: 0, t4: 0, t5: 0}
@@ -236,3 +237,4 @@ const tsAmountFactors = {
     scouting: {t1: 1, t2: 2, t3: 4, t4: 5, t5: 10}
 }
 const tradeskillNames = ['Selling', 'Gathering', 'Mining', 'Fishing', 'Woodcutting', 'Scouting'];
+const relicBonusFactors = {amount: 1.5, xp: .2, luck: .3, load: 3, drop: .5};
