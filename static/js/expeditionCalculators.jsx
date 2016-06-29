@@ -50,8 +50,8 @@ _.each(_.values(expeditions), (expedition) => {
         expeditionCostCalculators[expedition.valueKey].cols.push(col);
     });
     // total cost of all tiers
-    expeditionCostCalculators[expedition.valueKey].cols.push(
-        {id: expedition.valueKey.concat('cost'), title: 'Cost', cls: 'label', fn: _.partial(expeditionGoldCost, expedition.stateKey, expedition.valueKey, expedition.resourceKey)});
+//    expeditionCostCalculators[expedition.valueKey].cols.push(
+//        {id: expedition.valueKey.concat('cost'), title: 'Cost', cls: 'label', fn: _.partial(expeditionGoldCost, expedition.stateKey, expedition.valueKey, expedition.resourceKey)});
 });
 
 let expeditionResults = {

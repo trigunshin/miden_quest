@@ -213,6 +213,9 @@ let defaultState = {
         ore: {t1: 0, t2: 0, t3: 0, t4: 0, t5: 0},
         plant: {t1: 0, t2: 0, t3: 0, t4: 0, t5: 0},
         fish: {t1: 0, t2: 0, t3: 0, t4: 0, t5: 0},
+        // value for selling/scouting weighted total is 1:1
+        gold: {t1: 1, t2: 1, t3: 1, t4: 1, t5: 1},
+        landmark: {t1: 1, t2: 1, t3: 1, t4: 1, t5: 1},
         gem: 0, relic: 0, me: 0
     },
     expeditions: {adventurer: 0, weapons: 0, armor: 0, survival: 0},
@@ -221,7 +224,7 @@ let defaultState = {
         level: 1,
         xp: {gem: 0, relic: 0},
         amount: {gem: 0, relic: 0, kingdom: 0, we: 0, global: 1},
-        luck: {relic: 0, kingdom: 0, t1: 0, t2: 0, t3: 0, t4: 0, t5: 0}
+        luck: {relic: 0, kingdom: 0, t1: 0, t2: 0, t3: 0, t4: 0, t5: 0, t0: 100}
     }
 };
 _.each(_.keys(building_costs), (building_key) => {
@@ -230,11 +233,13 @@ _.each(_.keys(building_costs), (building_key) => {
     defaultState[building_key]['finish'] = 0;
 });
 const tiers = ['t1', 't2', 't3', 't4', 't5'];
-const tierFactors = {'t1': Math.pow(.67, 0), 't2': Math.pow(.67, 1), 't3': Math.pow(.67, 2), 't4': Math.pow(.67, 3), 't5': Math.pow(.67, 4)};
+const tierFactors = {t0: 1, 't1': Math.pow(.67, 0), 't2': Math.pow(.67, 1), 't3': Math.pow(.67, 2), 't4': Math.pow(.67, 3), 't5': Math.pow(.67, 4)};
+const tiersXp = {t0: 1, t1: 2, t2: 3, t3: 4, t4: 5, t5: 7};
 const salesAmountFactor = 1+(1000/100);
 const tsAmountFactors = {
     selling: {t1: 2*salesAmountFactor, t2: 7*salesAmountFactor, t3: 18*salesAmountFactor, t4: 45*salesAmountFactor, t5: 100*salesAmountFactor},
     scouting: {t1: 1, t2: 2, t3: 4, t4: 5, t5: 10}
-}
+};
 const tradeskillNames = ['Selling', 'Gathering', 'Mining', 'Fishing', 'Woodcutting', 'Scouting'];
+const tradeskillResourceMap = {gathering: 'plant', mining: 'ore', fishing: 'fish', woodcutting: 'wood', scouting: 'landmark', selling: 'gold'};
 const relicBonusFactors = {amount: 1.5, xp: .2, luck: .3, load: 3, drop: .5};

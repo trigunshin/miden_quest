@@ -7,8 +7,38 @@ TODO:
             extra field for gold/action
         scouting:
             extra fields for landmarks/action, actions/relic and relics/action
-    tie relic boosts on TS page in with fields on Misc page
+
+    WEIGHT TS OUTPUT (non sales/scout) BY RESOURCE COST
+    ADD TAX FIELD
+    crafting calculator
+        mostly needs base costs
+    highlight best buff?
 //*/
+function getTierXp(tier, tiersXp, state) {
+    let bonus = parseInt(_.get(state, 'ts.amount.global', 1));
+    let relic = parseFloat(_.get(state, 'ts.xp.relic', 0));
+    let gem = parseInt(_.get(state, 'ts.xp.gem', 0))/100;
+    let level = parseInt(_.get(state, 'ts.level', 1));
+    return relic + (1 + level/45 + gem) * tiersXp[tier] * bonus;
+}
+function getActionXp(tiers, tiersXp, tierChanceFn, state) {
+    const tiersDescending = _.reverse(_.slice(tiers)).concat('t0');
+    const finalIndex = _.findIndex(tiersDescending, (tier) => {return tierChanceFn(tier, state) >= 100});
+    const activeTiers = _.slice(tiersDescending, 0, finalIndex+1);
+    let ret = 0, p = 1;
+    for(let i=0;i<activeTiers.length;i++) {
+        const tier = activeTiers[i];
+        const tierChance = tierChanceFn(tier, state)/100;
+        const tierXp = getTierXp(tier, tiersXp, state).toFixed(2);
+
+        ret += p * tierChance * tierXp;
+        p *= (1 - tierChance);
+    }
+    return ret;
+}
+function getActionXpEv(tsPrefix, tiers, state) {
+    return getActionXp(tiers, tiersXp, _.partial(getTSChance, tsPrefix), state).toFixed(1);
+}
 
 function _getTSChance(baseLuck, relicLuck, kingdomLuck, tierFactor) {
     return Math.min(100, (baseLuck + (relicLuck + kingdomLuck) * tierFactor).toFixed(3));
@@ -16,8 +46,8 @@ function _getTSChance(baseLuck, relicLuck, kingdomLuck, tierFactor) {
 function _getTSChanceArgs(tsPrefix, tier, state) {
     return {
         base: parseInt(_.get(state, tsPrefix.concat('.luck.', tier), 0)),
-        relic: parseInt(_.get(state, tsPrefix.concat('.luck.relic'), 0)),
-        kingdom: parseInt(_.get(state, tsPrefix.concat('.luck.kingdom'), 0)),
+        relic: parseFloat(_.get(state, tsPrefix.concat('.luck.relic'), 0)),
+        kingdom: parseFloat(_.get(state, tsPrefix.concat('.luck.kingdom'), 0)),
         tierFactors: tierFactors[tier]
     };
 }
@@ -47,20 +77,21 @@ function getTierOutput(tsPrefix, tier, state) {
     let args = _.values(_getTierOutputArgs(tsPrefix, tier, state));
     return _getTierOutput.apply(this, args);
 }
-function getTotalOutput(tsPrefix, tiers, state) {
-    let ret = _.sum(_.map(tiers, (tier) => {
-        return parseInt(getTierOutput(tsPrefix, tier, state));
-    }));
-    return ret.toFixed(2);
-}
+// get chance-weighted outputs, and weight outputs by res value
 function getWeightedOutput(tsPrefix, tier, state) {
     let tierOutput = getTierOutput(tsPrefix, tier, state);
     let tierChance = getTSChance(tsPrefix, tier, state)/100;
     return (tierOutput * tierChance).toFixed(2)||0;
 }
-
 function getTotalWeightedOutput(tsPrefix, tiers, state) {
-    return _.sum(_.map(tiers, (tier) => {return parseInt(getWeightedOutput(tsPrefix, tier, state));}));
+    const perTierAmounts = _.map(tiers, (tier) => {
+        return parseFloat(getWeightedOutput(tsPrefix, tier, state));
+    });
+    const currentTS = _.get(state, 'ts.currentTS', 'selling');
+    const perTierValues = _.map(_.zipObject(tiers, perTierAmounts), (amount, tier) => {
+        return amount * _.get(state, 'resources.'.concat(tradeskillResourceMap[currentTS], '.', tier), 0);
+    });
+    return _.sum(perTierValues).toFixed(2);
 }
 
 //Relic amount:
@@ -144,7 +175,7 @@ function getRelicCost(tsPrefix, bonusFactor, bonusKey, state) {
     const relicCost = parseInt(_.get(state, 'resources.relic'), 0);
     const currentBonus = parseFloat(_.get(state, tsPrefix.concat(bonusKey)), 0);
     const nextRelicUpgrade = relicsForUpdate(currentBonus, bonusFactor) * numUpgrades + _.sum(_.range(numUpgrades));
-    return nextRelicUpgrade * relicCost;
+    return (nextRelicUpgrade * relicCost).toFixed(0);
 }
 function gemsForUpdate(tsPrefix, state) {
     let gems = parseInt(_.get(state, tsPrefix.concat('.amount.gem'), 0));
@@ -176,7 +207,11 @@ function getTSRelicCols(ts) {
 }
 function getTSXPCols(ts) {
     let ret = [{title: 'TS Level', type: 'number', placeholder: 0, cls: 'input', stateKey: 'level', fn: (state)=>{return _.get(state, ts.stateKeyPrefix.concat('.level'));}}];
-    return ret.concat(getTSInputCols('xp.', ['relic', 'gem'], ts));
+    ret = ret.concat(
+        getTSInputCols('xp.', ['relic', 'gem'], ts),
+        {title: 'EV/Action', placeholder: 0, cls: 'label', fn: _.partial(getActionXpEv, ts.stateKeyPrefix, tiers)}
+    );
+    return ret;
 }
 function getTSAmountCols(ts) {
     let ret = [{title: 'TS Level', type: 'number', placeholder: 0, cls: 'input', stateKey: 'level', fn: (state)=>{return _.get(state, ts.stateKeyPrefix.concat('.level'));}}];
@@ -201,7 +236,7 @@ function getCalculatedLuckCols(tiers, ts) {
 }
 function getTSWeightedCols(tiers, ts) {
     const ret = getTierColumns(tiers, getWeightedOutput, ts);
-    ret.push({title: 'EV Total', placeholder: 0, cls: 'label', fn: _.partial(getTotalWeightedOutput, ts.stateKeyPrefix, tiers)});
+    ret.push({title: 'Total Value', placeholder: 0, cls: 'label', fn: _.partial(getTotalWeightedOutput, ts.stateKeyPrefix, tiers)});
     return ret;
 }
 function getRelicResAmountCols(tiers, ts) {

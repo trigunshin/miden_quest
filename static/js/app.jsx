@@ -111,7 +111,6 @@ const StatefulCalculator = ReactRedux.connect(
 
 // Higher order components
 const Tradeskills = ({tsCalculators}) => {
-    console.info('ts props', this);
     return <div>
         <div className='row'>
             <div className='col-sm-2'>
