@@ -10,7 +10,7 @@ const InputElement = React.createClass({
     render() {
         let inp = null;
         if(this.props.type=='number') {
-            inp = <input type={'number'} step={'0.01'} min={'0'} className={'form-control'} placeholder={this.props.placeholder} value={this.props.value} onChange={this.handleChange} />;
+            inp = <input type={'number'} step={'0.01'} min={'0'} className={'form-control'} value={this.props.value} onChange={this.handleChange} />;
         }
         return (<div className='col-md-1'>
             {inp}

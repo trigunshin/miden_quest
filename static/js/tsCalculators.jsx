@@ -290,8 +290,9 @@ const ts = {
 
 const tsActionPrefixes = ['relic', 'level', 'currentTS', 'xp', 'amount', 'luck', 'load'];
 
-export function getTradeskillCalculators(defaultState) {
+export function getTradeskillCalculators(initState) {
     const tsCalculators = {};
+    let defaultState = _.get(initState, 'ts', initState);
     const tsReducerHelper = (state, action) => {
         if(!_.find(tsActionPrefixes, (pre)=>{return action.type.startsWith(pre);})) return state||defaultState;
         const newState = Object.assign({}, state);
