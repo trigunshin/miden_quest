@@ -1,3 +1,6 @@
+import React from 'react';
+import _ from 'lodash';
+import {tiers, tiersXp, tierFactors, tsAmountFactors, tradeskillResourceMap, relicBonusFactors} from './defaultStates';
 /*
 TODO:
     make switch hide unused divs
@@ -272,7 +275,7 @@ function getGemCols(tiers, ts) {
     return ret;
 }
 // Calculator row configs
-let ts = {
+const ts = {
     // relics: {label: 'Relic Next Upgrade Cost', stateKeyPrefix: 'ts', cols: getTSRelicCols},
     xp: {label: 'XP', stateKeyPrefix: 'ts', cols: getTSXPCols},
     amount: {label: 'Amount', stateKeyPrefix: 'ts', cols: getTSAmountCols},
@@ -285,22 +288,27 @@ let ts = {
     gemOutput: {label: 'Output EV (+1% Gem)', stateKeyPrefix: 'ts', cols: _.partial(getGemCols, tiers)}
 };
 
-let tsActionPrefixes = ['relic', 'level', 'currentTS', 'xp', 'amount', 'luck', 'load'];
-let tsReducerHelper = (state, action) => {
-    if(!_.find(tsActionPrefixes, (pre)=>{return action.type.startsWith(pre);})) return state||defaultState;
-    let newState = Object.assign({}, state);
-    return _.set(newState, action.type, action.value||0);
+const tsActionPrefixes = ['relic', 'level', 'currentTS', 'xp', 'amount', 'luck', 'load'];
+
+export function getTradeskillCalculators(defaultState) {
+    const tsCalculators = {};
+    const tsReducerHelper = (state, action) => {
+        if(!_.find(tsActionPrefixes, (pre)=>{return action.type.startsWith(pre);})) return state||defaultState;
+        const newState = Object.assign({}, state);
+        return _.set(newState, action.type, action.value||0);
+    };
+    _.forIn(ts, (ts, key) => {
+        tsCalculators[key] = {
+            title: <h4>{ts.label}</h4>,
+            stateKey: ts.stateKeyPrefix,
+            /*
+            currently this creates N 'ts' reducers that overwrite each other in reducers.jsx
+            ideally there would either be a single reducer or the reducers dict would not use stateKey
+            //*/
+            reducer: tsReducerHelper,
+            cols: ts.cols(ts)
+        }
+    });
+
+    return tsCalculators;
 };
-let tsCalculators = {};
-_.forIn(ts, (ts, key) => {
-    tsCalculators[key] = {
-        title: <h4>{ts.label}</h4>,
-        stateKey: ts.stateKeyPrefix,
-        /*
-        currently this creates N 'ts' reducers that overwrite each other in reducers.jsx
-        ideally there would either be a single reducer or the reducers dict would not use stateKey
-        //*/
-        reducer: tsReducerHelper,
-        cols: ts.cols(ts)
-    }
-});

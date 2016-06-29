@@ -1,3 +1,7 @@
+import React from 'react';
+import _ from 'lodash';
+import {defaultState} from './defaultStates';
+
 // set up misc config configuration
 const dropReducer = (state=defaultState.dropCalculator, action) => {
     let newState = Object.assign({}, state);
@@ -148,4 +152,8 @@ const miscCostCalculators = {
             {id: 'enchantMEUsed', title: 'ME Used', cls: 'label'}
         ]
     }
+};
+
+export function getMiscCalculators(defaultState) {
+    return miscCostCalculators;
 };

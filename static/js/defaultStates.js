@@ -1,4 +1,4 @@
-const base_costs = {
+export const base_costs = {
     t1: 17500,
     t2: 12250,
     t3: 7875,
@@ -9,7 +9,7 @@ const base_costs = {
     expedition_gold: 200000,
     silo: 1050
 };
-const building_costs = {
+export const building_costs = {
     locator: {
         cost: {
             'Gold': {base: base_costs.gold, factor: 1.35},
@@ -178,7 +178,7 @@ const building_costs = {
     }
 };
 
-let defaultState = {
+const initialState = {
     dropCalculator: {
         tsDropRate: 1,
         tsSecondsPer: 5,
@@ -228,18 +228,20 @@ let defaultState = {
     }
 };
 _.each(_.keys(building_costs), (building_key) => {
-    defaultState[building_key] = {};
-    defaultState[building_key]['start'] = 0;
-    defaultState[building_key]['finish'] = 0;
+    initialState[building_key] = {};
+    initialState[building_key]['start'] = 0;
+    initialState[building_key]['finish'] = 0;
 });
-const tiers = ['t1', 't2', 't3', 't4', 't5'];
-const tierFactors = {t0: 1, 't1': Math.pow(.67, 0), 't2': Math.pow(.67, 1), 't3': Math.pow(.67, 2), 't4': Math.pow(.67, 3), 't5': Math.pow(.67, 4)};
-const tiersXp = {t0: 1, t1: 2, t2: 3, t3: 4, t4: 5, t5: 7};
-const salesAmountFactor = 1+(1000/100);
-const tsAmountFactors = {
+
+export const defaultState=initialState;
+export const tiers = ['t1', 't2', 't3', 't4', 't5'];
+export const tierFactors = {t0: 1, 't1': Math.pow(.67, 0), 't2': Math.pow(.67, 1), 't3': Math.pow(.67, 2), 't4': Math.pow(.67, 3), 't5': Math.pow(.67, 4)};
+export const tiersXp = {t0: 1, t1: 2, t2: 3, t3: 4, t4: 5, t5: 7};
+export const salesAmountFactor = 1+(1000/100);
+export const tsAmountFactors = {
     selling: {t1: 2*salesAmountFactor, t2: 7*salesAmountFactor, t3: 18*salesAmountFactor, t4: 45*salesAmountFactor, t5: 100*salesAmountFactor},
     scouting: {t1: 1, t2: 2, t3: 4, t4: 5, t5: 10}
 };
-const tradeskillNames = ['Selling', 'Gathering', 'Mining', 'Fishing', 'Woodcutting', 'Scouting'];
-const tradeskillResourceMap = {gathering: 'plant', mining: 'ore', fishing: 'fish', woodcutting: 'wood', scouting: 'landmark', selling: 'gold'};
-const relicBonusFactors = {amount: 1.5, xp: .2, luck: .3, load: 3, drop: .5};
+export const tradeskillNames = ['Selling', 'Gathering', 'Mining', 'Fishing', 'Woodcutting', 'Scouting'];
+export const tradeskillResourceMap = {gathering: 'plant', mining: 'ore', fishing: 'fish', woodcutting: 'wood', scouting: 'landmark', selling: 'gold'};
+export const relicBonusFactors = {amount: 1.5, xp: .2, luck: .3, load: 3, drop: .5};

@@ -1,10 +1,7 @@
-// expeditions
-function expeditionReducerHelper(stateKey, state, action) {
-    if(action.stateKey!=stateKey || !action.valueKey) return state||defaultState[stateKey];
-    let newState = Object.assign({}, state);
-    newState[action.valueKey] = action.value||0;
-    return newState;
-};
+import React from 'react';
+import _ from 'lodash';
+import {tiers} from './defaultStates';
+
 // set up resource cost configuration
 const expeditions = {
     armor: {label: 'Wood/Armor', stateKey: 'expeditions', valueKey: 'armor', resourceKey: 'wood'},
@@ -19,7 +16,6 @@ const expeditionTierInfo = {
     t4: {baseCost: 750, levelOffset: 3},
     t5: {baseCost: 500, levelOffset: 4}
 };
-let expeditionCostCalculators = {};
 function expeditionResourceCost(stateKey, valueKey, baseCost, levelOffset, state) {
     let level = state[stateKey][valueKey];
     return (Math.max(level-levelOffset, 0)*((level-levelOffset)+1)/2)*baseCost;
@@ -35,24 +31,6 @@ function expeditionGoldCost(stateKey, valueKey, resourceKey, state) {
 
     return levelCost;
 }
-
-_.each(_.values(expeditions), (expedition) => {
-    expeditionCostCalculators[expedition.valueKey] = {
-        title: <h4>{expedition.label}</h4>,
-        stateKey: expedition.stateKey,
-        reducer: _.partial(expeditionReducerHelper, expedition.stateKey),
-        cols: [{id: expedition.stateKey, title: expedition.label, type: 'number', placeholder: 0, cls: 'input', stateKey: expedition.stateKey, valueKey: expedition.valueKey}]
-    }
-    // amt per tier
-    _.each(_.keys(expeditionTierInfo), (tier) => {
-        let info = expeditionTierInfo[tier];
-        let col = {id: tier, title: _.upperCase(tier), cls: 'label', fn: _.partial(expeditionResourceCost, expedition.stateKey, expedition.valueKey, info.baseCost, info.levelOffset)};
-        expeditionCostCalculators[expedition.valueKey].cols.push(col);
-    });
-    // total cost of all tiers
-//    expeditionCostCalculators[expedition.valueKey].cols.push(
-//        {id: expedition.valueKey.concat('cost'), title: 'Cost', cls: 'label', fn: _.partial(expeditionGoldCost, expedition.stateKey, expedition.valueKey, expedition.resourceKey)});
-});
 
 let expeditionResults = {
     stateKey: 'expeditionResult',
@@ -94,21 +72,51 @@ function expeditionTime(state) {
     levelTime += state.expeditions.survival;
     time += levelTime * 5;
 
-    time *= Math.pow(.97, state.inn.finish);
+    time *= Math.pow(.97, _.get(state, 'state.inn.finish', 0));
     return _.ceil(time);
 }
-expeditionCostCalculators[expeditionResults.stateKey] = {
-    title: <h4>{expeditionResults.label}</h4>,
-    stateKey: expeditionResults.stateKey,
-    reducer: (state, action)=>{return state||{};},
-    cols: [
-        {id: expeditionResults.stateKey.concat('totalLevels'), title: 'TotalLevels', cls: 'label', fn: (state)=>{return _.sum(_.values(state.expeditions))}},
-        {id: expeditionResults.stateKey.concat('RelicMin'), title: 'Relic Min', cls: 'label', fn: relicMin},
-        {id: expeditionResults.stateKey.concat('RelicMax'), title: 'Relic Max', cls: 'label', fn: relicMax},
-        {id: expeditionResults.stateKey.concat('KeyMin'), title: 'Key Min', cls: 'label', fn: keyMin},
-        {id: expeditionResults.stateKey.concat('KeyMax'), title: 'Key Max', cls: 'label', fn: keyMax},
-        {id: expeditionResults.stateKey.concat('GemMin'), title: 'Gem Min', cls: 'label', fn: gemMin},
-        {id: expeditionResults.stateKey.concat('GemMax'), title: 'Gem Max', cls: 'label', fn: gemMax},
-        {id: expeditionResults.stateKey.concat('expeditionTime'), title: 'Total Time', cls: 'label', fn: expeditionTime}
-    ]
+
+export function getExpeditionCalculators(defaultState) {
+    function expeditionReducerHelper(stateKey, state, action) {
+        if(action.stateKey!=stateKey || !action.valueKey) return state||defaultState[stateKey];
+        let newState = Object.assign({}, state);
+        newState[action.valueKey] = action.value||0;
+        return newState;
+    };
+
+    let expeditionCalculators = {};
+    _.each(_.values(expeditions), (expedition) => {
+        expeditionCalculators[expedition.valueKey] = {
+            title: <h4>{expedition.label}</h4>,
+            stateKey: expedition.stateKey,
+            reducer: _.partial(expeditionReducerHelper, expedition.stateKey),
+            cols: [{id: expedition.stateKey, title: expedition.label, type: 'number', placeholder: 0, cls: 'input', stateKey: expedition.stateKey, valueKey: expedition.valueKey}]
+        }
+        // amt per tier
+        _.each(_.keys(expeditionTierInfo), (tier) => {
+            let info = expeditionTierInfo[tier];
+            let col = {id: tier, title: _.upperCase(tier), cls: 'label', fn: _.partial(expeditionResourceCost, expedition.stateKey, expedition.valueKey, info.baseCost, info.levelOffset)};
+            expeditionCalculators[expedition.valueKey].cols.push(col);
+        });
+        // total cost of all tiers
+    //    expeditionCalculators[expedition.valueKey].cols.push(
+    //        {id: expedition.valueKey.concat('cost'), title: 'Cost', cls: 'label', fn: _.partial(expeditionGoldCost, expedition.stateKey, expedition.valueKey, expedition.resourceKey)});
+    });
+    expeditionCalculators[expeditionResults.stateKey] = {
+        title: <h4>{expeditionResults.label}</h4>,
+        stateKey: expeditionResults.stateKey,
+        reducer: (state, action)=>{return state||{};},
+        cols: [
+            {id: expeditionResults.stateKey.concat('totalLevels'), title: 'TotalLevels', cls: 'label', fn: (state)=>{return _.sum(_.values(state.expeditions))}},
+            {id: expeditionResults.stateKey.concat('RelicMin'), title: 'Relic Min', cls: 'label', fn: relicMin},
+            {id: expeditionResults.stateKey.concat('RelicMax'), title: 'Relic Max', cls: 'label', fn: relicMax},
+            {id: expeditionResults.stateKey.concat('KeyMin'), title: 'Key Min', cls: 'label', fn: keyMin},
+            {id: expeditionResults.stateKey.concat('KeyMax'), title: 'Key Max', cls: 'label', fn: keyMax},
+            {id: expeditionResults.stateKey.concat('GemMin'), title: 'Gem Min', cls: 'label', fn: gemMin},
+            {id: expeditionResults.stateKey.concat('GemMax'), title: 'Gem Max', cls: 'label', fn: gemMax},
+            {id: expeditionResults.stateKey.concat('expeditionTime'), title: 'Total Time', cls: 'label', fn: expeditionTime}
+        ]
+    };
+
+    return expeditionCalculators;
 };
