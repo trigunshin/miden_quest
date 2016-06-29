@@ -1,24 +1,7 @@
 import React from 'react';
 import _ from 'lodash';
 import {tiers, tiersXp, tierFactors, tsAmountFactors, tradeskillResourceMap, relicBonusFactors} from './defaultStates';
-/*
-TODO:
-    make switch hide unused divs
-        others:
-            hide the total field
-        selling:
-            extra field for gold/action
-        scouting:
-            extra fields for landmarks/action, actions/relic and relics/action
 
-    ADD TAX FIELD
-    expedition calculator
-        fix totalCost
-        add input field for Inn; tie it to same value as Kingdom.inn.finished
-    crafting calculator
-        mostly needs base costs
-    highlight best buff?
-//*/
 function getTierXp(tier, tiersXp, state) {
     let bonus = parseInt(_.get(state, 'ts.amount.global', 1));
     let relic = parseFloat(_.get(state, 'ts.xp.relic', 0));

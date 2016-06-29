@@ -69,7 +69,7 @@ const KingdomCalculator = (props) => {
 const CraftingCalculator = (props) => {
     return <div>
         {_.map(craftingCalculators, (config, idx) => {
-            return <StatefulCalculator {...config} key={idx} />
+            return <FnStatefulCalculator {...config} key={idx} />
         })}
     </div>
 };
@@ -125,7 +125,7 @@ const Container = React.createClass({
                         <li role="presentation" className={currentTab=='resources' ? "active" : ''} onClick={this.setResourceTab}><a href="#" key={'resources_pane'}>Resources</a></li>
                         <li role="presentation" className={currentTab=='kingdom' ? "active" : ''} onClick={this.setKingdomTab}><a href="#" key={'kingdom_pane'}>Kingdom</a></li>
                         <li role="presentation" className={currentTab=='expeditions' ? "active" : ''} onClick={this.setExpeditionTab}><a href="#" key={'expedition_pane'}>Expeditions</a></li>
-                        <li role="presentation" className={currentTab=='crafting' ? "active" : ''} onClick={this.setCraftingTab}><a href="#" key={'crafting_pane'}>Crafting (TODO)</a></li>
+                        <li role="presentation" className={currentTab=='crafting' ? "active" : ''} onClick={this.setCraftingTab}><a href="#" key={'crafting_pane'}>Crafting</a></li>
                     </ul>
                 </div>
                 {toRender}

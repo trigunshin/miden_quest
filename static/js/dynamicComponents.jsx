@@ -1,6 +1,8 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
+import numeral from 'numeral';
 import {connect} from 'react-redux';
+import {doubleDigitFormat} from './defaultStates';
 
 const InputElement = React.createClass({
     handleChange(event) {
@@ -22,7 +24,7 @@ const StatefulInputElement = connect(
 )(InputElement);
 // Display non-input data
 const ValueHolderDiv = ({id, value}) => {
-    return <div id={id} className='col-md-1'>{value}</div>;
+    return <div id={id} className='col-md-1'>{numeral(value||0).format(doubleDigitFormat)}</div>;
 };
 const StatefulDiv = connect(
     (state, ownProps) => {if(ownProps.fn) return {value: ownProps.fn(state)}; else return {value: _.get(state, ownProps.stateKey)}}
