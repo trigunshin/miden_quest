@@ -24,7 +24,8 @@ let resourceCostCalculatorsConfig = {
 };
 let resourceActionPrefixes = ['gem', 'relic', 'me', 'wood', 'ore', 'fish', 'plant'];
 
-export function getResourceCalculators(defaultState) {
+export function getResourceCalculators(initState) {
+    let defaultState = _.get(initState, 'resources', initState);
     let miscResourceReducerHelper = (state, action) => {
     if(!_.find(resourceActionPrefixes, (pre)=>{return action.type.startsWith(pre);})) return state||defaultState;
         let newState = Object.assign({}, state);
