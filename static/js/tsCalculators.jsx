@@ -8,8 +8,10 @@ TODO:
         scouting:
             extra fields for landmarks/action, actions/relic and relics/action
 
-    WEIGHT TS OUTPUT (non sales/scout) BY RESOURCE COST
     ADD TAX FIELD
+    expedition calculator
+        fix totalCost
+        add input field for Inn; tie it to same value as Kingdom.inn.finished
     crafting calculator
         mostly needs base costs
     highlight best buff?
@@ -83,15 +85,18 @@ function getWeightedOutput(tsPrefix, tier, state) {
     let tierChance = getTSChance(tsPrefix, tier, state)/100;
     return (tierOutput * tierChance).toFixed(2)||0;
 }
+
+function _factorAmountsByCost(tiers, tierAmounts, state) {
+    const currentTS = _.get(state, 'ts.currentTS', 'selling');
+    return _.map(_.zipObject(tiers, tierAmounts), (amount, tier) => {
+        return amount * _.get(state, 'resources.'.concat(tradeskillResourceMap[currentTS], '.', tier), 0);
+    });
+}
 function getTotalWeightedOutput(tsPrefix, tiers, state) {
     const perTierAmounts = _.map(tiers, (tier) => {
         return parseFloat(getWeightedOutput(tsPrefix, tier, state));
     });
-    const currentTS = _.get(state, 'ts.currentTS', 'selling');
-    const perTierValues = _.map(_.zipObject(tiers, perTierAmounts), (amount, tier) => {
-        return amount * _.get(state, 'resources.'.concat(tradeskillResourceMap[currentTS], '.', tier), 0);
-    });
-    return _.sum(perTierValues).toFixed(2);
+    return _.sum(_factorAmountsByCost(tiers, perTierAmounts, state)).toFixed(2);
 }
 
 //Relic amount:
@@ -104,9 +109,9 @@ function relicAmountROITier(tsPrefix, tier, state) {
 }
 function getRelicAmountROI(tsPrefix, tiers, state) {
     // for each tier, call _getTierOutput with current arguments except for relic
-    let ret = _.map(tiers, (tier) => {return parseFloat(relicAmountROITier(tsPrefix, tier, state));});
-    ret = _.sum(ret).toFixed(2);
-    return ret;
+    const tierAmounts = _.map(tiers, (tier) => {return parseFloat(relicAmountROITier(tsPrefix, tier, state));});
+    const tierValues = _factorAmountsByCost(tiers, tierAmounts, state);
+    return _.sum(tierValues).toFixed(2);
 }
 function getRelicAmountROIDiff(tsPrefix, tiers, state) {
     const roi = getRelicAmountROI(tsPrefix, tiers, state);
@@ -124,9 +129,9 @@ function relicLuckROITier(tsPrefix, tier, state) {
 }
 function getRelicLuckROI(tsPrefix, tiers, state) {
     // for each tier, call _getTierOutput with current arguments except for relic
-    let ret = _.map(tiers, (tier) => {return parseFloat(relicLuckROITier(tsPrefix, tier, state));});
-    ret = _.sum(ret).toFixed(2);
-    return ret;
+    const tierAmounts = _.map(tiers, (tier) => {return parseFloat(relicLuckROITier(tsPrefix, tier, state));});
+    const tierValues = _factorAmountsByCost(tiers, tierAmounts, state);
+    return _.sum(tierValues).toFixed(2);
 }
 function getRelicLuckROIDiff(tsPrefix, tiers, state) {
     const roi = getRelicLuckROI(tsPrefix, tiers, state);
@@ -144,9 +149,9 @@ function gemROITier(tsPrefix, tier, state) {
 }
 function getGemROI(tsPrefix, tiers, state) {
     // for each tier, call _getTierOutput with current arguments except for relic
-    let ret = _.map(tiers, (tier) => {return parseFloat(gemROITier(tsPrefix, tier, state));});
-    ret = _.sum(ret).toFixed(2);
-    return ret;
+    const tierAmounts = _.map(tiers, (tier) => {return parseFloat(gemROITier(tsPrefix, tier, state));});
+    const tierValues = _factorAmountsByCost(tiers, tierAmounts, state);
+    return _.sum(tierValues).toFixed(2);
 }
 function getGemROIDiff(tsPrefix, tiers, state) {
     const roi = getGemROI(tsPrefix, tiers, state);
