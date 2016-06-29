@@ -77,20 +77,21 @@ function getTierOutput(tsPrefix, tier, state) {
     let args = _.values(_getTierOutputArgs(tsPrefix, tier, state));
     return _getTierOutput.apply(this, args);
 }
-function getTotalOutput(tsPrefix, tiers, state) {
-    let ret = _.sum(_.map(tiers, (tier) => {
-        return parseInt(getTierOutput(tsPrefix, tier, state));
-    }));
-    return ret.toFixed(2);
-}
+// get chance-weighted outputs, and weight outputs by res value
 function getWeightedOutput(tsPrefix, tier, state) {
     let tierOutput = getTierOutput(tsPrefix, tier, state);
     let tierChance = getTSChance(tsPrefix, tier, state)/100;
     return (tierOutput * tierChance).toFixed(2)||0;
 }
-
 function getTotalWeightedOutput(tsPrefix, tiers, state) {
-    return _.sum(_.map(tiers, (tier) => {return parseInt(getWeightedOutput(tsPrefix, tier, state));}));
+    const perTierAmounts = _.map(tiers, (tier) => {
+        return parseFloat(getWeightedOutput(tsPrefix, tier, state));
+    });
+    const currentTS = _.get(state, 'ts.currentTS', 'selling');
+    const perTierValues = _.map(_.zipObject(tiers, perTierAmounts), (amount, tier) => {
+        return amount * _.get(state, 'resources.'.concat(tradeskillResourceMap[currentTS], '.', tier), 0);
+    });
+    return _.sum(perTierValues).toFixed(2);
 }
 
 //Relic amount:
@@ -235,7 +236,7 @@ function getCalculatedLuckCols(tiers, ts) {
 }
 function getTSWeightedCols(tiers, ts) {
     const ret = getTierColumns(tiers, getWeightedOutput, ts);
-    ret.push({title: 'EV Total', placeholder: 0, cls: 'label', fn: _.partial(getTotalWeightedOutput, ts.stateKeyPrefix, tiers)});
+    ret.push({title: 'Total Value', placeholder: 0, cls: 'label', fn: _.partial(getTotalWeightedOutput, ts.stateKeyPrefix, tiers)});
     return ret;
 }
 function getRelicResAmountCols(tiers, ts) {
