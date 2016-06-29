@@ -1,5 +1,9 @@
+import React from 'react';
+import _ from 'lodash';
+import {building_costs} from './defaultStates';
+
 // set up kingdom building configs
-const buildingReducerHelper = (key, state, action) => {
+const buildingReducerHelper = (defaultState, key, state, action) => {
     if(!action.type || !action.type.startsWith(key)) return state||defaultState[key];
 
     // update state value
@@ -42,30 +46,35 @@ const buildingReducerHelper = (key, state, action) => {
 
     return newState;
 };
-const buildingReducers = {};
-_.each(_.keys(building_costs), (building_key) => {
-    buildingReducers[building_key] = _.partial((key, state, action) => {
-        return buildingReducerHelper(key, state, action);
-    }, building_key);
-});
 
-const buildingCostCalculators = _.map(_.keys(building_costs), (building_id) => {
-    const building = building_costs[building_id];
-    let ret = {
-        title: <h4>{building.label}</h4>,
-        stateKey: building_id,
-        reducer: buildingReducers[building_id],
-        cols: [
-            {id: ''+building_id+'_start', title: '# Start', type: 'number', placeholder: 0, cls: 'input', stateKey: building_id, valueKey: 'start'},
-            {id: ''+building_id+'_finish', title: '# Finished', type: 'number', placeholder: 0, cls: 'input', stateKey: building_id, valueKey: 'finish'}
-        ]
-    }
-
-    const labels = _.map(_.keys(building.cost), (label) => {
-        const cost = building.cost;
-        return {id: label, title: label, cls: 'label'};
+export function getBuildingCalculators(defaultState) {
+    const buildingReducers = {};
+    _.each(_.keys(building_costs), (building_key) => {
+        buildingReducers[building_key] = _.partial((key, state, action) => {
+            return buildingReducerHelper(defaultState, key, state, action);
+        }, building_key);
     });
-    ret.cols = ret.cols.concat(labels);
 
-    return ret;
-});
+    const buildingCalculators = _.map(_.keys(building_costs), (building_id) => {
+        const building = building_costs[building_id];
+        let ret = {
+            title: <h4>{building.label}</h4>,
+            stateKey: building_id,
+            reducer: buildingReducers[building_id],
+            cols: [
+                {id: ''+building_id+'_start', title: '# Start', type: 'number', placeholder: 0, cls: 'input', stateKey: building_id, valueKey: 'start'},
+                {id: ''+building_id+'_finish', title: '# Finished', type: 'number', placeholder: 0, cls: 'input', stateKey: building_id, valueKey: 'finish'}
+            ]
+        }
+
+        const labels = _.map(_.keys(building.cost), (label) => {
+            const cost = building.cost;
+            return {id: label, title: label, cls: 'label'};
+        });
+        ret.cols = ret.cols.concat(labels);
+
+        return ret;
+    });
+
+    return buildingCalculators;
+};

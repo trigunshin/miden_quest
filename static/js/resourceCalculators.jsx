@@ -1,3 +1,7 @@
+import React from 'react';
+import _ from 'lodash';
+import {tiers} from './defaultStates';
+
 function getResourceColumns(resType, tiers, ts) {
     return _.map(tiers, (tier) => {
         const stateKey = resType.concat(tier);
@@ -19,21 +23,26 @@ let resourceCostCalculatorsConfig = {
     misc: {label: 'Misc Resources', stateKeyPrefix: 'resources', cols: getMiscResourceCols},
 };
 let resourceActionPrefixes = ['gem', 'relic', 'me', 'wood', 'ore', 'fish', 'plant'];
-let miscResourceReducerHelper = (state, action) => {
+
+export function getResourceCalculators(defaultState) {
+    let miscResourceReducerHelper = (state, action) => {
     if(!_.find(resourceActionPrefixes, (pre)=>{return action.type.startsWith(pre);})) return state||defaultState;
-    let newState = Object.assign({}, state);
-    return _.set(newState, action.type, action.value||0);
+        let newState = Object.assign({}, state);
+        return _.set(newState, action.type, action.value||0);
+    };
+    let resourceCostCalculators = {};
+    _.forIn(resourceCostCalculatorsConfig, (res, key) => {
+        resourceCostCalculators[key] = {
+            title: <h4>{res.label}</h4>,
+            stateKey: res.stateKeyPrefix,
+            /*
+            currently this creates N 'res' reducers that overwrite each other in reducers.jsx
+            ideally there would either be a single reducer or the reducers dict would not use stateKey
+            //*/
+            reducer: miscResourceReducerHelper,
+            cols: res.cols(res)
+        }
+    });
+
+    return resourceCostCalculators;
 };
-let resourceCostCalculators = {};
-_.forIn(resourceCostCalculatorsConfig, (res, key) => {
-    resourceCostCalculators[key] = {
-        title: <h4>{res.label}</h4>,
-        stateKey: res.stateKeyPrefix,
-        /*
-        currently this creates N 'res' reducers that overwrite each other in reducers.jsx
-        ideally there would either be a single reducer or the reducers dict would not use stateKey
-        //*/
-        reducer: miscResourceReducerHelper,
-        cols: res.cols(res)
-    }
-});
