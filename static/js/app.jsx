@@ -33,7 +33,6 @@ const costCalculators = {
 
 // Higher order components
 const Tradeskills = () => {
-    //console.info(this, state);
     return <div>
         <div className='row'>
             <div className='col-sm-2'>
