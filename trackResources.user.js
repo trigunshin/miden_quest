@@ -3,7 +3,7 @@
 // @namespace https://github.com/trigunshin/miden_quest
 // @description MQO resource tracker; need to run clearTSResults() to reset tile% after moving
 // @homepage https://trigunshin.github.com/miden_quest
-// @version 17
+// @version 18
 // @downloadURL http://trigunshin.github.io/miden_quest/trackResources.user.js
 // @updateURL http://trigunshin.github.io/miden_quest/trackResources.user.js
 // @include http://midenquest.com/Game.aspx
@@ -25,8 +25,6 @@ option instead of the "Top" frame option at the top-left part of the console.
 This *should* be compatible with Ryalane's script if Ryalane's script loads first.
 
 TODO
-	expand/collapse (tampermonkey too)
-	track global bonus?
 	fix data_reset in tampermonkey?
 //*/
 // preferences; data is still tracked, this only affects output
@@ -412,10 +410,10 @@ function updateUI(outputArgs) {
 function initializeUI() {
 	$("body").append('<div id="resourceLogContainer" style="position: absolute;top: 0;right: 0; width: 210px;"><div>Resource Log <div style="float: right;"><a href="javascript:toggleUI();">[Toggle]</a></div></div> <ul id="resourceLogList" style="display"></ul></div>');
 }
-
-unsafeWindow.toggleUI = function (){
+function toggleUI() {
     $("#resourceLogList").toggle();
-};
+}
+if(typeof unsafeWindow !== 'undefined') unsafeWindow.toggleUI = toggleUI;
 
 function track_resources_onmsg(evt) {
 	track_resources_original_msg(evt);
