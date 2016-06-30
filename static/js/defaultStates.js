@@ -13,8 +13,8 @@ export const building_costs = {
     locator: {
         cost: {
             'Gold': {base: base_costs.gold, factor: 1.35},
-            't1 Wood': {base: base_costs.t1, factor: 1.35},
             't1 Ore': {base: base_costs.t1, factor: 1.35},
+            't1 Plant': {base: base_costs.t1, factor: 1.35},
             't4 Plant': {base: base_costs.t4, factor: 1.35}
         },
         upkeep: 125,
@@ -253,3 +253,4 @@ export const tradeskillNames = ['Selling', 'Gathering', 'Mining', 'Fishing', 'Wo
 export const tradeskillResourceMap = {gathering: 'plant', mining: 'ore', fishing: 'fish', woodcutting: 'wood', scouting: 'landmark', selling: 'gold'};
 export const relicBonusFactors = {amount: 1.5, xp: .2, luck: .3, load: 3, drop: .5};
 export const tierPrice = {1: 50, 2: 225, 3: 500, 4: 1000, 5: 2500, 6: 5000, 7: 11500, 8: 25000, 9: 65000, 10: 120000, 11: 250000, 12: 515000, 13: 1000000, 14: 2500000, 15: 10000000, 16: 20000000};
+export const doubleDigitFormat = '0,0.00';
