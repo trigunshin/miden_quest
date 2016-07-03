@@ -84,10 +84,10 @@ export const building_costs = {
         cost: {
             'Gold': {base: base_costs.gold, factor: 1.25},
             'Gem': {base: base_costs.gem, factor: 1.35},
-            't3 Wood': {base: base_costs.t3, factor: 1.25},
-            't4 Ore': {base: base_costs.t4, factor: 1.25},
+            't1 Fish': {base: base_costs.t1, factor: 1.25},
             't2 Plant': {base: base_costs.t2, factor: 1.25},
-            't1 Fish': {base: base_costs.t1, factor: 1.25}
+            't3 Wood': {base: base_costs.t3, factor: 1.25},
+            't4 Ore': {base: base_costs.t4, factor: 1.25}
         },
         upkeep: 125,
         label: 'Gem Mine'
