@@ -1,5 +1,6 @@
 import React from 'react';
 import _ from 'lodash';
+import numbro from 'numbro';
 import {tiers, tiersXp, tierFactors, tsAmountFactors, tradeskillResourceMap, relicBonusFactors} from './defaultStates';
 
 function getTierXp(tier, tiersXp, state) {
@@ -154,7 +155,7 @@ function roiDifference(roiFn, tsPrefix, tiers, state) {
 function costPerROI(roiFn, costFn, tsPrefix, tiers, state) {
     const roiDiff = roiDifference(roiFn, tsPrefix, tiers, state);
     const roiCost = costFn(state);
-    return (roiCost/roiDiff).toFixed(2);
+    return numbro(roiCost/roiDiff).format('0a.00');
 }
 // forecast upgrade prices
 function relicsForUpdate(currentBonus, bonusFactor) {
@@ -230,12 +231,15 @@ function getTSWeightedCols(tiers, ts) {
     ret.push({title: 'Total Value', placeholder: 0, cls: 'label', fn: _.partial(getTotalWeightedOutput, ts.stateKeyPrefix, tiers)});
     return ret;
 }
+function formatRoiCost(roiCostFn, state) {
+    return numbro(roiCostFn(state)).format('0a.00');
+}
 function getRelicResAmountCols(tiers, ts) {
     const roiCostFn = _.partial(getRelicCost, ts.stateKeyPrefix, relicBonusFactors.amount, '.amount.relic');
     const ret = getTierColumns(tiers, relicAmountROITier, ts);
     ret.push({title: 'EV Total', placeholder: 0, cls: 'label', fn: _.partial(getRelicAmountROI, ts.stateKeyPrefix, tiers)});
     ret.push({title: 'EV Diff', placeholder: 0, cls: 'label', fn: _.partial(roiDifference, getRelicAmountROI, ts.stateKeyPrefix, tiers)});
-    ret.push({title: 'EV Cost', placeholder: 0, cls: 'label', fn: roiCostFn});
+    ret.push({title: 'EV Cost', placeholder: 0, cls: 'label', fn: _.partial(formatRoiCost, roiCostFn)});
     ret.push({title: 'EV Cost/Diff', placeholder: 0, cls: 'label', fn: _.partial(costPerROI, getRelicAmountROI, roiCostFn, ts.stateKeyPrefix, tiers)});
     return ret;
 }
@@ -244,7 +248,7 @@ function getRelicLuckAmountCols(tiers, ts) {
     const ret = getTierColumns(tiers, relicLuckROITier, ts);
     ret.push({title: 'EV Total', placeholder: 0, cls: 'label', fn: _.partial(getRelicLuckROI, ts.stateKeyPrefix, tiers)});
     ret.push({title: 'EV Diff', placeholder: 0, cls: 'label', fn: _.partial(roiDifference, getRelicLuckROI, ts.stateKeyPrefix, tiers)});
-    ret.push({title: 'EV Cost', placeholder: 0, cls: 'label', fn: roiCostFn});
+    ret.push({title: 'EV Cost', placeholder: 0, cls: 'label', fn: _.partial(formatRoiCost, roiCostFn)});
     ret.push({title: 'EV Cost/Diff', placeholder: 0, cls: 'label', fn: _.partial(costPerROI, getRelicLuckROI, roiCostFn, ts.stateKeyPrefix, tiers)});
     return ret;
 }
@@ -253,7 +257,7 @@ function getGemCols(tiers, ts) {
     const ret = getTierColumns(tiers, gemROITier, ts);
     ret.push({title: 'EV Total', placeholder: 0, cls: 'label', fn: _.partial(getGemROI, ts.stateKeyPrefix, tiers)});
     ret.push({title: 'EV Diff', placeholder: 0, cls: 'label', fn: _.partial(roiDifference, getGemROI, ts.stateKeyPrefix, tiers)});
-    ret.push({title: 'EV Cost', placeholder: 0, cls: 'label', fn: roiCostFn});
+    ret.push({title: 'EV Cost', placeholder: 0, cls: 'label', fn: _.partial(formatRoiCost, roiCostFn)});
     ret.push({title: 'EV Cost/Diff', placeholder: 0, cls: 'label', fn: _.partial(costPerROI, getGemROI, roiCostFn, ts.stateKeyPrefix, tiers)});
     return ret;
 }
