@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name MQO Inventory Search
 // @namespace https://github.com/trigunshin/miden_quest
-// @description MQO inventory searcher
+// @description MQO inventory searcher. Navigate to Equipment -> Customize to populate it.
 // @homepage https://trigunshin.github.com/miden_quest
 // @version 1
 // @downloadURL http://trigunshin.github.io/miden_quest/searchBox.user.js
@@ -49,7 +49,7 @@ function initSearchUI(target) {
     searchBox = jQuery('<input/>', {
         id: searchBoxId,
         type: 'text',
-        placeholder: 'search term here'
+        placeholder: 'Search by Name'
     });
     searchBox.autocomplete({
         source: [],
@@ -82,6 +82,7 @@ if(typeof track_inventory_original_msg === 'undefined') {
     console.info('searchbox not yet loaded, loading...');
     var track_inventory_original_msg = ws.onmessage;
     ws.onmessage=track_inventory_onmsg;
+    console.info('Navigate to Equipment -> Customize to populate the search.');
 } else {
     ws.onmessage=track_inventory_onmsg;
 }
