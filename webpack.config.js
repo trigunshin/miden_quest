@@ -2,8 +2,11 @@ var path = require('path');
 var webpack = require('webpack');
 
 module.exports = {
-  entry: './static/js/app.jsx',
-  output: { path: __dirname, filename: 'app.js' },
+	entry: {
+		'app': ['./static/js/app.jsx'],
+		'searchBox': ['./searchBox.user']
+	},
+  output: { path: __dirname, filename: '[name].js' },
   module: {
     loaders: [
       {
