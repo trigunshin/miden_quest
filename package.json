@@ -19,6 +19,7 @@
   },
   "homepage": "https://github.com/trigunshin/miden_quest#readme",
   "dependencies": {
+    "lodash": "^4.13.1",
     "numbro": "^1.8.1",
     "react": "^15.1.0",
     "react-dom": "^15.1.0",
