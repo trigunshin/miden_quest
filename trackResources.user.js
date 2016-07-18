@@ -359,6 +359,7 @@ function addTaxScouts(tsResults, outputArgs) {
 	return outputArgs.concat([
 		'Relics Taxed:', tsResults.scouts.relicTaxedCount,
 		'Avg tax:', (tsResults.scouts.relicTaxedCount/tsResults.scouts.relicTaxed).toFixed(2),
+		'Tax %:', (tsResults.scouts.relicTaxed/tsResults.scouts.relicDrop*100).toFixed(2)
 	]);
 }
 function addTaxedItems(tsResults, outputArgs) {
