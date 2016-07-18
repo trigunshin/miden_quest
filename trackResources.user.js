@@ -3,7 +3,7 @@
 // @namespace https://github.com/trigunshin/miden_quest
 // @description MQO resource tracker; need to run clearTSResults() to reset tile% after moving
 // @homepage https://trigunshin.github.com/miden_quest
-// @version 18
+// @version 19
 // @downloadURL http://trigunshin.github.io/miden_quest/trackResources.user.js
 // @updateURL http://trigunshin.github.io/miden_quest/trackResources.user.js
 // @include http://midenquest.com/Game.aspx
@@ -88,7 +88,9 @@ var tsResults = {
 		gained: 0,
 		relicGained: 0,
 		relicDouble: 0,
-		relicDrop: 0
+		relicDrop: 0,
+		relicTaxedCount: 0,
+		relicTaxed: 0
 	},
 	itemInfo: {
 		equipDrop: 0,
@@ -134,6 +136,8 @@ function clearTSResults() {
 	tsResults.scouts.total = 0;
 	tsResults.scouts.taxed = 0;
 	tsResults.scouts.gained = 0;
+	tsResults.scouts.relicTaxed = 0;
+	tsResults.scouts.relicTaxedCount = 0;
 	tsResults.scouts.relicGained = 0;
 	tsResults.scouts.relicDouble = 0;
 	tsResults.scouts.relicDrop = 0;
@@ -219,11 +223,17 @@ function parseScouts(msg, tsResults, wasTaxed) {
 }
 function parseScoutResourceRelic(msg) {
 	var count = parseInt(msg.match(scoutRelicRegex)[1]);
+	// not sure if this one occurs, safety first
 	if(msg.indexOf('a relic') >= 0) count = 1;
-
-	tsResults.scouts.relicGained += count;
+	// relics can be taxed now
+	if(msg.indexOf("taxes") >=0)
+		tsResults.scouts.relicTaxedCount += count;
+	else
+		tsResults.scouts.relicGained += count;
+	// track the total relic drops for taxes/doubles
 	tsResults.scouts.relicDrop += 1;
 	if(msg.indexOf('double') >= 0) tsResults.scouts.relicDouble += 1;
+	if(msg.indexOf('taxes') >= 0) tsResults.scouts.relicTaxed += 1;
 }
 function parseTSLog(datum) {
 	var arr = datum.split('|');
@@ -347,8 +357,9 @@ function addTaxSales(tsResults, outputArgs) {
 }
 function addTaxScouts(tsResults, outputArgs) {
 	return outputArgs.concat([
-		'scout tax:', tsResults.sales.taxed,
-		'avg tax:', (tsResults.sales.taxed/tsResults.taxedActions).toFixed(2)]);
+		'Relics Taxed:', tsResults.scouts.relicTaxedCount,
+		'Avg tax:', (tsResults.scouts.relicTaxedCount/tsResults.scouts.relicTaxed).toFixed(2),
+	]);
 }
 function addTaxedItems(tsResults, outputArgs) {
 	return outputArgs.concat([
@@ -381,7 +392,9 @@ function updateOutput(results, msg) {
 	if(outputItems) outputArgs = addItemOutput(tsResults, outputArgs);
 	if(outputQuests) outputArgs = outputArgs.concat(['quest%:', (100*tsResults.questItems/tsResults.questActions).toFixed(2)]);
 	if(outputTaxes) {
-		outputArgs = addTaxPercent(tsResults, outputArgs);
+		// scouting tax functions differently
+		if(!scoutsActive) outputArgs = addTaxPercent(tsResults, outputArgs);
+
 		if(salesActive) outputArgs = addTaxSales(tsResults, outputArgs);
 		else if(scoutsActive) outputArgs = addTaxScouts(tsResults, outputArgs);
 		else outputArgs = addTaxedItems(tsResults, outputArgs);
