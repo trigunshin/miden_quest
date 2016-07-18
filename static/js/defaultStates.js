@@ -6,6 +6,7 @@ export const base_costs = {
     t5: 1400,
     gem: 10,
     gold: 100000,
+    relic: 500,
     expedition_gold: 200000,
     silo: 1050
 };
@@ -171,10 +172,33 @@ export const building_costs = {
             't2 Fish': {base: base_costs.t2, factor: 1.35},
             't4 Ore': {base: base_costs.t4, factor: 1.35},
             't4 Fish': {base: base_costs.t4, factor: 1.35},
-            't5 Wood': {base: base_costs.t5, factor: 1.35},
+            't5 Wood': {base: base_costs.t5, factor: 1.35}
         },
         upkeep: 125,
         label: 'Workshop'
+    },
+    academy: {
+        cost: {
+            'Gold': {base: base_costs.expedition_gold, factor: 1.35},
+            'Relics': {base: base_costs.relic, factor: 1.35},
+            't1 Ore': {base: base_costs.t1, factor: 1.35},
+            't3 Ore': {base: base_costs.t3, factor: 1.35},
+            't4 Fish': {base: base_costs.t4, factor: 1.35},
+            't5 Wood': {base: base_costs.t5, factor: 1.35}
+        },
+        upkeep: 125,
+        label: 'Academy'
+    },
+    toolshed: {
+        cost: {
+            'Gold': {base: base_costs.expedition_gold, factor: 1.25},
+            't1 Fish': {base: base_costs.t1, factor: 1.25},
+            't2 Plant': {base: base_costs.t2, factor: 1.25},
+            't3 Wood': {base: base_costs.t3, factor: 1.25},
+            't3 Plant': {base: base_costs.t3, factor: 1.25}
+        },
+        upkeep: 125,
+        label: 'Toolshed'
     }
 };
 
