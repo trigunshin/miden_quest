@@ -3,7 +3,7 @@
 // @namespace https://github.com/trigunshin/miden_quest
 // @description MQO resource tracker; need to run clearTSResults() to reset tile% after moving
 // @homepage https://trigunshin.github.com/miden_quest
-// @version 19
+// @version 20
 // @downloadURL http://trigunshin.github.io/miden_quest/trackResources.user.js
 // @updateURL http://trigunshin.github.io/miden_quest/trackResources.user.js
 // @include http://midenquest.com/Game.aspx
@@ -359,6 +359,7 @@ function addTaxScouts(tsResults, outputArgs) {
 	return outputArgs.concat([
 		'Relics Taxed:', tsResults.scouts.relicTaxedCount,
 		'Avg tax:', (tsResults.scouts.relicTaxedCount/tsResults.scouts.relicTaxed).toFixed(2),
+		'Tax %:', (tsResults.scouts.relicTaxed/tsResults.scouts.relicDrop*100).toFixed(2)
 	]);
 }
 function addTaxedItems(tsResults, outputArgs) {
