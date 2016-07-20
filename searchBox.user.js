@@ -3,7 +3,7 @@
 // @namespace https://github.com/trigunshin/miden_quest
 // @description MQO inventory searcher. Navigate to Equipment -> Customize to populate it.
 // @homepage https://trigunshin.github.com/miden_quest
-// @version 1
+// @version 2
 // @downloadURL http://trigunshin.github.io/miden_quest/searchBox.user.js
 // @updateURL http://trigunshin.github.io/miden_quest/searchBox.user.js
 // @include http://midenquest.com/Game.aspx
@@ -11,11 +11,6 @@
 // @include https://www.midenquest.com/Game.aspx
 // ==/UserScript==
 (function () {
-    var scriptElement = document.createElement("script");
-    scriptElement.type = "text/javascript";
-    scriptElement.src = "https://code.jquery.com/ui/1.11.4/jquery-ui.js";
-    document.body.appendChild(scriptElement);
-
     scriptElement = document.createElement("script");
     scriptElement.type = "text/javascript";
     scriptElement.src = "https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.11.1/lodash.min.js";
