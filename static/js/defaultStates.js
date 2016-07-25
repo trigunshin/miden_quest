@@ -256,12 +256,15 @@ const initialState = {
         xp: {gem: 0, relic: 0},
         amount: {gem: 0, relic: 0, kingdom: 0, we: 0, global: 1},
         luck: {relic: 0, kingdom: 0, t1: 0, t2: 0, t3: 0, t4: 0, t5: 0, t0: 100}
-    }
+    },
+    kingdom: {}
 };
 _.each(_.keys(building_costs), (building_key) => {
     initialState[building_key] = {};
     initialState[building_key]['start'] = 0;
     initialState[building_key]['finish'] = 0;
+
+    initialState.kingdom[building_key] = {'start': 0, 'finish': 0};
 });
 
 export const defaultState=initialState;

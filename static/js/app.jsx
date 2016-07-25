@@ -59,9 +59,16 @@ const ResourceCosts = ({resourceCalculators}) => {
         })}
     </div>;
 };
-const KingdomCalculator = (props) => {
+const BuildingCalculator = (props) => {
     return <div>
         {_.map(buildingCalculators, (config, idx) => {
+            return <StatefulCalculator {...config} key={idx}/>
+        })}
+    </div>
+};
+const KingdomCalculator = (props) => {
+    return <div>
+        {_.map(kingdomCalculators, (config, idx) => {
             return <StatefulCalculator {...config} key={idx}/>
         })}
     </div>
@@ -83,6 +90,9 @@ const Container = React.createClass({
     setKingdomTab() {
         this.setState({currentTab: 'kingdom'});
     },
+    setBuildingTab() {
+        this.setState({currentTab: 'building'});
+    },
     setMiscTab() {
         this.setState({currentTab: 'misc'});
     },
@@ -102,7 +112,9 @@ const Container = React.createClass({
         const currentTab = this.state.currentTab;
         let toRender;
 
-        if(this.state.currentTab == 'kingdom')
+        if(this.state.currentTab == 'building')
+            toRender = <BuildingCalculator/>;
+        else if(this.state.currentTab == 'kingdom')
             toRender = <KingdomCalculator/>;
         else if(this.state.currentTab == 'crafting')
             toRender = <CraftingCalculator/>;
@@ -121,11 +133,11 @@ const Container = React.createClass({
                 <div>
                     <ul className="nav nav-tabs">
                         <li role="presentation" className={currentTab=='ts' ? "active" : ''} onClick={this.setTSTab}><a href="#" key={'ts_pane'}>TS</a></li>
-                        <li role="presentation" className={currentTab=='misc' ? "active" : ''} onClick={this.setMiscTab}><a href="#" key={'misc_pane'}>Misc</a></li>
                         <li role="presentation" className={currentTab=='resources' ? "active" : ''} onClick={this.setResourceTab}><a href="#" key={'resources_pane'}>Resources</a></li>
+                        <li role="presentation" className={currentTab=='building' ? "active" : ''} onClick={this.setBuildingTab}><a href="#" key={'building_pane'}>Buildings</a></li>
                         <li role="presentation" className={currentTab=='kingdom' ? "active" : ''} onClick={this.setKingdomTab}><a href="#" key={'kingdom_pane'}>Kingdom</a></li>
-                        <li role="presentation" className={currentTab=='expeditions' ? "active" : ''} onClick={this.setExpeditionTab}><a href="#" key={'expedition_pane'}>Expeditions</a></li>
                         <li role="presentation" className={currentTab=='crafting' ? "active" : ''} onClick={this.setCraftingTab}><a href="#" key={'crafting_pane'}>Crafting</a></li>
+                        <li role="presentation" className={currentTab=='misc' ? "active" : ''} onClick={this.setMiscTab}><a href="#" key={'misc_pane'}>Misc</a></li>
                     </ul>
                 </div>
                 {toRender}
