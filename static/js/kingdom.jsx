@@ -39,8 +39,8 @@ let config = {
     plant: {label: 'Plant', stateKeyPrefix: 'kingdom', cols: _.partial(getResourceColumns, 'plant.', tiers)},
     fish: {label: 'Fish', stateKeyPrefix: 'kingdom', cols: _.partial(getResourceColumns, 'fish.', tiers)},
     trades: {label: 'Tradeskills', stateKeyPrefix: 'kingdom', cols: _.partial(getBuildings, tradeBuildingKeys)},
-    utilFirst: {label: 'Tradeskills', stateKeyPrefix: 'kingdom', cols: _.partial(getBuildings, utilityFirstRow)},
-    utilSecond: {label: 'Tradeskills', stateKeyPrefix: 'kingdom', cols: _.partial(getBuildings, utilitySecondRow)},
+    utilFirst: {label: 'Buildings', stateKeyPrefix: 'kingdom', cols: _.partial(getBuildings, utilityFirstRow)},
+    utilSecond: {label: 'Buildings', stateKeyPrefix: 'kingdom', cols: _.partial(getBuildings, utilitySecondRow)},
 };
 
 function validateStartFinish(state, key, type, value) {
