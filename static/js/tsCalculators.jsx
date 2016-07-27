@@ -171,7 +171,8 @@ function getRelicCost(tsPrefix, bonusFactor, bonusKey, state) {
 }
 function gemsForUpdate(tsPrefix, state) {
     let gems = parseInt(_.get(state, tsPrefix.concat('.amount.gem'), 0));
-    let nextUpdate = _.min(50, _.floor(gems / 5 + 5)); // increment every 5, up to 50/ea
+    let nextUpdate = _.floor(gems / 5 + 5); // increment every 5, up to 50/ea
+    nextUpdate = _.min([50, nextUpdate]);
     return nextUpdate;
 }
 function getGemCost(tsPrefix, state) {
