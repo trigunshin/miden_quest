@@ -1,9 +1,11 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
+import _ from 'lodash';
 import {connect} from 'react-redux';
 
 const InputElement = React.createClass({
     handleChange(event) {
+        console.info(event.target.value);
         let newValue = parseFloat(event.target.value);
         this.props.onInputChange(this.props.stateKey, newValue);
     },
@@ -11,6 +13,8 @@ const InputElement = React.createClass({
         let inp = null;
         if(this.props.type=='number') {
             inp = <input type={'number'} step={'0.01'} min={'0'} className={'form-control'} value={this.props.value} onChange={this.handleChange} />;
+        } else if(this.props.type=='text') {
+            inp = <input type={'text'} className={'form-control'} value={this.props.value} onChange={this.handleChange} />;
         }
         return (<div className='col-md-1'>
             {inp}
@@ -51,7 +55,7 @@ const Calculator = ({stateKey, onInputChange, title, cols}) => {
         </div>
         <div className='row'>
             {_.map(cols, (col) => {
-                if(col.type == 'number') return <StatefulInputElement {...col} onInputChange={onInputChange} key={'el'.concat(col.title)} />;
+                if(_.includes(['number', 'text'], col.type)) return <StatefulInputElement {...col} onInputChange={onInputChange} key={'el'.concat(col.title)} />;
                 else return <StatefulDiv {...col} key={'el'.concat(col.title)} />;
             })}
         </div>

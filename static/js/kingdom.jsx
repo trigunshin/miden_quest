@@ -41,6 +41,12 @@ let config = {
     trades: {label: 'Tradeskills', stateKeyPrefix: 'kingdom', cols: _.partial(getBuildings, tradeBuildingKeys)},
     utilFirst: {label: 'Buildings', stateKeyPrefix: 'kingdom', cols: _.partial(getBuildings, utilityFirstRow)},
     utilSecond: {label: 'Buildings', stateKeyPrefix: 'kingdom', cols: _.partial(getBuildings, utilitySecondRow)},
+    test: {label: 'test', stateKeyPrefix: 'kingdom', cols: (ts) =>{
+        return [{
+            title: 'Test', type: 'text', placeholder: 0, cls: 'input', stateKey: '.test', 
+            fn: (state)=>{return _.get(state, ts.stateKeyPrefix.concat('.test'));}
+        }]
+    }}
 };
 
 function validateStartFinish(state, key, type, value) {
@@ -81,7 +87,7 @@ function updateBuildingCosts(state, key) {
     _.each(_.keys(totalCosts), (label) => {state[key][label] = totalCosts[label].toFixed(0);});
 }
 
-const actionPrefixes = _.keys(building_costs);
+const actionPrefixes = _.keys(building_costs) + 'test';
 export function getKingdomCalculators(initState) {
     const calculators = {};
     let defaultState = _.get(initState, 'kingdom', initState);
