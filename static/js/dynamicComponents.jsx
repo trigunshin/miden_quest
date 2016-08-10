@@ -5,8 +5,8 @@ import {connect} from 'react-redux';
 
 const InputElement = React.createClass({
     handleChange(event) {
-        console.info(event.target.value);
-        let newValue = parseFloat(event.target.value);
+        let newValue = event.target.value;
+        if(this.props.type=='number') newValue = parseFloat(newValue);
         this.props.onInputChange(this.props.stateKey, newValue);
     },
     render() {
@@ -16,13 +16,22 @@ const InputElement = React.createClass({
         } else if(this.props.type=='text') {
             inp = <input type={'text'} className={'form-control'} value={this.props.value} onChange={this.handleChange} />;
         }
-        return (<div className='col-md-1'>
+        let classString = 'col-md-1';
+        if(this.props.classNames) classString = _.join(_.concat(['col-md-1'], this.props.classNames),' ');
+
+        return (<div className={classString}>
             {inp}
         </div>);
     }
 });
 const StatefulInputElement = connect(
-    (state, ownProps) => {if(ownProps.fn) return {value: ownProps.fn(state)}; else return {value: _.get(state, ownProps.stateKey)}}
+    (state, ownProps) => {
+        const ret = {};
+        if(ownProps.fn) ret.value = ownProps.fn(state);
+        else ret.value = _.get(state, ownProps.stateKey);
+        if(ownProps.highlightGreenFn && ownProps.highlightGreenFn(state)) ret.classNames = ['bg-success'];
+        return ret;
+    }
 )(InputElement);
 // Display non-input data
 const ValueHolderDiv = ({id, value}) => {
