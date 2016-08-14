@@ -29,7 +29,7 @@ export const building_costs = {
             't4 Plant': {base: base_costs.t4, factor: 1.25}
         },
         upkeep: 125,
-        label: 'Mining Camp'
+        label: 'Mine'
     },
     watchtower: {
         cost: {
@@ -39,12 +39,12 @@ export const building_costs = {
             't3 Plant': {base: base_costs.t3, factor: 1.25}
         },
         upkeep: 125,
-        label: 'Watchtower'
+        label: 'Watch Tower'
     },
     lumber_camp: {
         cost: {
             'Gold': {base: base_costs.gold, factor: 1.25},
-            't2 Wood': {base: base_costs.t2, factor: 1.25},
+            't2 Plant': {base: base_costs.t2, factor: 1.25},
             't5 Wood': {base: base_costs.t5, factor: 1.25},
             't5 Ore': {base: base_costs.t5, factor: 1.25}
         },
@@ -69,7 +69,7 @@ export const building_costs = {
             't3 Fish': {base: base_costs.t3, factor: 1.25}
         },
         upkeep: 125,
-        label: 'Trade Center'
+        label: 'Tradecenter'
     },
     botanist_house: {
         cost: {
@@ -155,7 +155,7 @@ export const building_costs = {
             't2 Fish': {base: base_costs.t2, factor: 1.35},
         },
         upkeep: 125,
-        label: 'Adventurer\'s Guild'
+        label: 'Adventurer Guild'
     },
     inn: {
         cost: {
@@ -255,9 +255,9 @@ const initialState = {
         level: 1,
         xp: {gem: 0, relic: 0},
         amount: {gem: 0, relic: 0, kingdom: 0, we: 0, global: 1},
-        luck: {relic: 0, kingdom: 0, t1: 0, t2: 0, t3: 0, t4: 0, t5: 0, t0: 100}
+        luck: {relic: 0, kingdom: 0, t1: 90, t2: 60, t3: 30, t4: 15, t5: 5, t0: 100}
     },
-    kingdom: {}
+    kingdom: {'costs': {}}
 };
 _.each(_.keys(building_costs), (building_key) => {
     initialState[building_key] = {};

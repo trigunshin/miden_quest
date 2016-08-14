@@ -5,10 +5,11 @@ import {tiers, building_costs} from './defaultStates';
 function getResourceColumns(resType, tiers, ts) {
     return _.map(tiers, (tier) => {
         const type = _.join(_.dropRight(resType),'');
-        const valueKey = _.trim(_.join([ts.stateKeyPrefix, '.costs.', tier, ' ', _.upperFirst(type)], ''));
+        const totalCostKey = _.trim(_.join([ts.stateKeyPrefix, '.costs.', tier, ' ', _.upperFirst(type)], ''));
+        const currentResourceCostKey = _.trim(_.join([ts.stateKeyPrefix, '.resources.', tier, ' ', _.upperFirst(type)], ''));
         const stateKey = resType.concat(tier);
         const title = _.upperFirst(tier);
-        const fn = (state)=>{return _.get(state, valueKey);};
+        const fn = (state)=>{return _.max([0, _.get(state, totalCostKey) - _.get(state, currentResourceCostKey, 0)]);};
         return {title, cls: 'label', stateKey, fn};
     });
 }
@@ -22,7 +23,14 @@ function getBuildingPair(label, key, ts) {
     let pre = ts.stateKeyPrefix;
     let ret = [
         {title: label+' Start', type: 'number', placeholder: 0, cls: 'input', stateKey: key+'.start', fn: (state)=>{return _.get(state, ts.stateKeyPrefix.concat('.', key, '.start'));}},
-        {title: label+' End', type: 'number', placeholder: 0, cls: 'input', stateKey: key+'.finish', fn: (state)=>{return _.get(state, ts.stateKeyPrefix.concat('.', key, '.finish'));}}
+        {title: label+' End', type: 'number', placeholder: 0, cls: 'input', stateKey: key+'.finish', fn: (state)=>{return _.get(state, ts.stateKeyPrefix.concat('.', key, '.finish'));},
+            // highlight TODO buildings here
+            highlightGreenFn: (state) => {
+                const start = _.get(state, ts.stateKeyPrefix.concat('.', key, '.start'));
+                const finish = _.get(state, ts.stateKeyPrefix.concat('.', key, '.finish'));
+                return finish > start;
+            }
+        }
     ];
     return ret;
 }
@@ -33,7 +41,13 @@ function getBuildings(keys, ts) {
     }));
 }
 let config = {
-    misc: {label: 'Misc', stateKeyPrefix: 'kingdom', cols: _.partial(getResourceColumns, '', ['Gold', 'Relics', 'Gem'])},
+    kingdomBuildings: {label: 'Kingdom Info Parser (Double-click relevant field in the Kingdom view in-game & paste into box)', stateKeyPrefix: 'kingdom', cols: (ts) =>{
+        return [
+            {title: 'Buildings Copy/Paste', type: 'text', placeholder: 0, cls: 'input', stateKey: 'buildings', fn: (state)=>{return _.get(state, ts.stateKeyPrefix.concat('.buildings'));}},
+            {title: 'Resources Copy/Paste', type: 'text', placeholder: 0, cls: 'input', stateKey: 'resources', fn: (state)=>{return _.get(state, ts.stateKeyPrefix.concat('.resources'));}}
+        ]
+    }},
+    misc: {label: 'Misc (Not auto-parsed)', stateKeyPrefix: 'kingdom', cols: _.partial(getResourceColumns, '', ['Gold', 'Relics', 'Gem'])},
     wood: {label: 'Wood', stateKeyPrefix: 'kingdom', cols: _.partial(getResourceColumns, 'wood.', tiers)},
     ore: {label: 'Ore', stateKeyPrefix: 'kingdom', cols: _.partial(getResourceColumns, 'ore.', tiers)},
     plant: {label: 'Plant', stateKeyPrefix: 'kingdom', cols: _.partial(getResourceColumns, 'plant.', tiers)},
@@ -80,8 +94,78 @@ function updateBuildingCosts(state, key) {
 
     _.each(_.keys(totalCosts), (label) => {state[key][label] = totalCosts[label].toFixed(0);});
 }
+const omittedCostFields = ['costs', 'buildings'];
+function updateTotalCosts(newState) {
+    const costValues = _.values(_.omit(newState, ['costs', 'resources']));
+    const costs = _.reduce(costValues, (accum, costs) => {
+        _.forIn(costs, (costValue, costKey) => {
+            let val = parseInt(_.get(accum, costKey, 0));
+            val += parseInt(costValue);
+            _.set(accum, costKey, val);
+        });
+        return accum;
+    }, {});
+    newState.costs = costs;
+    return newState;
+}
 
-const actionPrefixes = _.keys(building_costs);
+const actionPrefixes = _.concat(_.keys(building_costs), 'buildings', 'resources');
+const pasteSplitString = '# of ';
+const buildingsByLabel = _.invert(_.mapValues(building_costs, (cur) => {return cur.label;}));
+function buildingParser(infoString, newState) {
+    let buildings = _.map(_.drop(infoString.split(pasteSplitString)), _.trim)
+    buildings = _.map(buildings, (building)=>{return building.split(': ');});
+
+    _.each(buildings, (building) => {
+        let key = building[0];
+        let count = parseInt(building[1]);
+        let buildingKey = buildingsByLabel[key]
+
+        if(buildingKey) {
+            validateStartFinish(newState, buildingKey, buildingKey+'.finish', count);
+            validateStartFinish(newState, buildingKey, buildingKey+'.start', count);
+
+            updateBuildingCosts(newState, buildingKey);
+        }
+    });
+}
+//const buildingRegex = /# of (\w*): (\d*) /;
+var buildingRegex = /# of (\w*): (\d*) /;
+function updateBuildingState(buildingKey, type, value, newState) {
+    validateStartFinish(newState, buildingKey, type, value);
+    updateBuildingCosts(newState, buildingKey);
+
+    return newState;
+}
+function parseKingdomResources(resourceString, newState) {
+    if(!resourceString || resourceString.length === 0) {
+        //resources = {};
+    }
+    const resArray = resourceString.split(' ');
+
+    const resources = {};
+    let tmpKey = '';
+    let tmpCount = '';
+    _.each(resArray, (str) => {
+        if(/^T/.test(str)) {  // T1-5
+            if(tmpKey.length > 0) {
+                resources[tmpKey] = parseInt(tmpCount);
+                tmpCount = '';
+            }
+            tmpKey = _.lowerFirst(str) + ' ';
+        } else if (/^\D/.test(str)) {  // Ore/Wood/Fish/Plant
+            tmpKey += str.replace(':', '');
+        } else {  // Numbers
+            tmpCount += str;
+        }
+    });
+    // finish for t5 fish
+    resources[tmpKey] = parseInt(tmpCount);
+
+    newState.resources = resources;
+    return newState;
+}
+
 export function getKingdomCalculators(initState) {
     const calculators = {};
     let defaultState = _.get(initState, 'kingdom', initState);
@@ -89,25 +173,28 @@ export function getKingdomCalculators(initState) {
     const simpleReducer = (state, action) => {
         // set simple state value
         if(!_.find(actionPrefixes, (pre)=>{return action.type.startsWith(pre);})) return state||defaultState;
+        console.info(action, actionPrefixes);
         let newState = Object.assign({}, state);
         newState = _.set(newState, action.type, action.value||0);
 
-        const key = action.type.split('.')[0];
-        // validate start<finish
-        validateStartFinish(newState, key, action.type, action.value);
-        // calculate cost values
-        updateBuildingCosts(newState, key);
+        if(action.type==='resources') {
+            newState.resources = action.value;
+            let resString = action.value;
+            parseKingdomResources(resString, newState);
 
-        const costValues = _.values(_.omit(newState, 'costs'));
-        const costs = _.reduce(costValues, (accum, costs) => {
-            _.forIn(costs, (costValue, costKey) => {
-                let val = parseInt(_.get(accum, costKey, 0));
-                val += parseInt(costValue);
-                _.set(accum, costKey, val);
-            });
-            return accum;
-        }, {});
-        newState.costs = costs;
+            return newState;
+        }
+        if(action.type==='buildings') {
+            buildingParser(action.value, newState);
+            updateTotalCosts(newState);
+            newState.buildings = action.value;
+            return newState;
+        }
+
+        const key = action.type.split('.')[0];
+
+        updateBuildingState(key, action.type, action.value, newState);
+        updateTotalCosts(newState);
 
         return newState;
     };

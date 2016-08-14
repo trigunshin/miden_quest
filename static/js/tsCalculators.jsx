@@ -228,52 +228,27 @@ function getCalculatedLuckCols(tiers, ts) {
     return getTierColumns(tiers, getTSChance, ts);
 }
 function getTSWeightedCols(tiers, ts) {
-    const ret = getTierColumns(tiers, getWeightedOutput, ts);
-    ret.push({title: 'Total Value', placeholder: 0, cls: 'label', fn: _.partial(getTotalWeightedOutput, ts.stateKeyPrefix, tiers)});
-    return ret;
+    return [{title: '', placeholder: 0, cls: 'label', fn: _.partial(getTotalWeightedOutput, ts.stateKeyPrefix, tiers)}];
 }
-function formatRoiCost(roiCostFn, state) {
-    return numbro(roiCostFn(state)).format('0a.00');
-}
-function getRelicResAmountCols(tiers, ts) {
-    const roiCostFn = _.partial(getRelicCost, ts.stateKeyPrefix, relicBonusFactors.amount, '.amount.relic');
-    const ret = getTierColumns(tiers, relicAmountROITier, ts);
-    ret.push({title: 'EV Total', placeholder: 0, cls: 'label', fn: _.partial(getRelicAmountROI, ts.stateKeyPrefix, tiers)});
-    ret.push({title: 'EV Diff', placeholder: 0, cls: 'label', fn: _.partial(roiDifference, getRelicAmountROI, ts.stateKeyPrefix, tiers)});
-    ret.push({title: 'EV Cost', placeholder: 0, cls: 'label', fn: _.partial(formatRoiCost, roiCostFn)});
-    ret.push({title: 'EV Cost/Diff', placeholder: 0, cls: 'label', fn: _.partial(costPerROI, getRelicAmountROI, roiCostFn, ts.stateKeyPrefix, tiers)});
-    return ret;
-}
-function getRelicLuckAmountCols(tiers, ts) {
-    const roiCostFn = _.partial(getRelicCost, ts.stateKeyPrefix, relicBonusFactors.luck, '.luck.relic');
-    const ret = getTierColumns(tiers, relicLuckROITier, ts);
-    ret.push({title: 'EV Total', placeholder: 0, cls: 'label', fn: _.partial(getRelicLuckROI, ts.stateKeyPrefix, tiers)});
-    ret.push({title: 'EV Diff', placeholder: 0, cls: 'label', fn: _.partial(roiDifference, getRelicLuckROI, ts.stateKeyPrefix, tiers)});
-    ret.push({title: 'EV Cost', placeholder: 0, cls: 'label', fn: _.partial(formatRoiCost, roiCostFn)});
-    ret.push({title: 'EV Cost/Diff', placeholder: 0, cls: 'label', fn: _.partial(costPerROI, getRelicLuckROI, roiCostFn, ts.stateKeyPrefix, tiers)});
-    return ret;
-}
-function getGemCols(tiers, ts) {
-    const roiCostFn = _.partial(getGemCost, ts.stateKeyPrefix);
-    const ret = getTierColumns(tiers, gemROITier, ts);
-    ret.push({title: 'EV Total', placeholder: 0, cls: 'label', fn: _.partial(getGemROI, ts.stateKeyPrefix, tiers)});
-    ret.push({title: 'EV Diff', placeholder: 0, cls: 'label', fn: _.partial(roiDifference, getGemROI, ts.stateKeyPrefix, tiers)});
-    ret.push({title: 'EV Cost', placeholder: 0, cls: 'label', fn: _.partial(formatRoiCost, roiCostFn)});
-    ret.push({title: 'EV Cost/Diff', placeholder: 0, cls: 'label', fn: _.partial(costPerROI, getGemROI, roiCostFn, ts.stateKeyPrefix, tiers)});
+function getUpgradeCols(tiers, ts) {
+    const relicResCostFn = _.partial(getRelicCost, ts.stateKeyPrefix, relicBonusFactors.amount, '.amount.relic');
+    const relicLuckCostFn = _.partial(getRelicCost, ts.stateKeyPrefix, relicBonusFactors.luck, '.luck.relic');
+    const gemCostFn = _.partial(getGemCost, ts.stateKeyPrefix);
+    const ret = [
+        {title: 'Relic Res', placeholder: 0, cls: 'label', fn: _.partial(costPerROI, getRelicAmountROI, relicResCostFn, ts.stateKeyPrefix, tiers)},
+        {title: 'Relic Luck', placeholder: 0, cls: 'label', fn: _.partial(costPerROI, getRelicLuckROI, relicLuckCostFn, ts.stateKeyPrefix, tiers)},
+        {title: 'Gem Bonus', placeholder: 0, cls: 'label', fn: _.partial(costPerROI, getGemROI, gemCostFn, ts.stateKeyPrefix, tiers)}
+    ];
     return ret;
 }
 // Calculator row configs
 const ts = {
-    // relics: {label: 'Relic Next Upgrade Cost', stateKeyPrefix: 'ts', cols: getTSRelicCols},
     xp: {label: 'XP', stateKeyPrefix: 'ts', cols: getTSXPCols},
     amount: {label: 'Amount', stateKeyPrefix: 'ts', cols: getTSAmountCols},
     luck: {label: 'Luck', stateKeyPrefix: 'ts', cols: getTSChanceCols},
-    totalLuck: {label: 'Calculated Luck', stateKeyPrefix: 'ts', cols: _.partial(getCalculatedLuckCols, tiers)},
-    amountOutput: {label: 'TS Output', stateKeyPrefix: 'ts', cols: _.partial(getTSAmountOutputCols, tiers)},
-    weightedOutput: {label: 'Output EV', stateKeyPrefix: 'ts', cols: _.partial(getTSWeightedCols, tiers)},
-    relicAmountOutput: {label: 'Output EV (+15 Relic Amount)', stateKeyPrefix: 'ts', cols: _.partial(getRelicResAmountCols, tiers)},
-    relicLuckOutput: {label: 'Output EV (+3 Relic Luck)', stateKeyPrefix: 'ts', cols: _.partial(getRelicLuckAmountCols, tiers)},
-    gemOutput: {label: 'Output EV (+1% Gem)', stateKeyPrefix: 'ts', cols: _.partial(getGemCols, tiers)}
+    totalLuck: {label: 'Overall Tier Chance', stateKeyPrefix: 'ts', cols: _.partial(getCalculatedLuckCols, tiers)},
+    weightedOutput: {label: 'Per-Action Average Output (fill in Resource Tab)', stateKeyPrefix: 'ts', cols: _.partial(getTSWeightedCols, tiers)},
+    evOutput: {label: 'Cost per Upgrade (cheaper is better)', stateKeyPrefix: 'ts', cols: _.partial(getUpgradeCols, tiers)}
 };
 
 const tsActionPrefixes = ['relic', 'level', 'currentTS', 'xp', 'amount', 'luck', 'load'];

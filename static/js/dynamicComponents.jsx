@@ -1,24 +1,37 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
+import _ from 'lodash';
 import {connect} from 'react-redux';
 
 const InputElement = React.createClass({
     handleChange(event) {
-        let newValue = parseFloat(event.target.value);
+        let newValue = event.target.value;
+        if(this.props.type=='number') newValue = parseFloat(newValue);
         this.props.onInputChange(this.props.stateKey, newValue);
     },
     render() {
         let inp = null;
         if(this.props.type=='number') {
             inp = <input type={'number'} step={'0.01'} min={'0'} className={'form-control'} value={this.props.value} onChange={this.handleChange} />;
+        } else if(this.props.type=='text') {
+            inp = <input type={'text'} className={'form-control'} value={this.props.value} onChange={this.handleChange} />;
         }
-        return (<div className='col-md-1'>
+        let classString = 'col-md-1';
+        if(this.props.classNames) classString = _.join(_.concat(['col-md-1'], this.props.classNames),' ');
+
+        return (<div className={classString}>
             {inp}
         </div>);
     }
 });
 const StatefulInputElement = connect(
-    (state, ownProps) => {if(ownProps.fn) return {value: ownProps.fn(state)}; else return {value: _.get(state, ownProps.stateKey)}}
+    (state, ownProps) => {
+        const ret = {};
+        if(ownProps.fn) ret.value = ownProps.fn(state);
+        else ret.value = _.get(state, ownProps.stateKey);
+        if(ownProps.highlightGreenFn && ownProps.highlightGreenFn(state)) ret.classNames = ['bg-success'];
+        return ret;
+    }
 )(InputElement);
 // Display non-input data
 const ValueHolderDiv = ({id, value}) => {
@@ -51,7 +64,7 @@ const Calculator = ({stateKey, onInputChange, title, cols}) => {
         </div>
         <div className='row'>
             {_.map(cols, (col) => {
-                if(col.type == 'number') return <StatefulInputElement {...col} onInputChange={onInputChange} key={'el'.concat(col.title)} />;
+                if(_.includes(['number', 'text'], col.type)) return <StatefulInputElement {...col} onInputChange={onInputChange} key={'el'.concat(col.title)} />;
                 else return <StatefulDiv {...col} key={'el'.concat(col.title)} />;
             })}
         </div>
