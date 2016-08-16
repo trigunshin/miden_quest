@@ -1,6 +1,6 @@
 var printResultsFlag = false;
 var postToURL = true;
-var kingdomPostURL = 'https://script.google.com/macros/s/AKfycbxogMPxlYR6LTXqcRBDvGVLtybgQKPn1MJatSozD8daa64V4mI/exec';
+var kingdomPostURL = '';
 
 function parseKingdom(msg) {
 	var results = [];
