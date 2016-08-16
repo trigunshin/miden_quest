@@ -3,7 +3,7 @@
 // @namespace https://github.com/trigunshin/miden_quest
 // @description MQO profile parser. Currently prints TS attempts and title+username to console
 // @homepage https://trigunshin.github.com/miden_quest
-// @version 2
+// @version 3
 // @downloadURL http://trigunshin.github.io/miden_quest/parseProfile.user.js
 // @updateURL http://trigunshin.github.io/miden_quest/parseProfile.user.js
 // @include http://midenquest.com/Game.aspx
@@ -12,10 +12,7 @@
 // @grant GM_log
 // ==/UserScript==
 function getTSAttempts(data) {
-	var tmp = $(data).find("div:contains('tradeskill attempts')");
-	if(tmp.length === 0) return -1;
-
-	var tsDiv = tmp;
+	var tsDiv = $(data).find("div:contains('tradeskill attempts')");
 	var tsNode = tsDiv[tsDiv.length-1];
 	var tsNodeParent = tsNode.parentElement;
 	var tsSiblings = tsNodeParent.childNodes;
@@ -31,18 +28,24 @@ function getName(data) {
 	// order is div,script,div plus some misc text in between
 	var profileContentChild = barParentChildren[4];
 	// now we want first children of next 3 nodes to hit the title div
-	var titleDiv = profileContentChild.childNodes[1].childNodes[1].childNodes[1]
+	var titleDiv = profileContentChild.childNodes[1].childNodes[1].childNodes[1];
 	return titleDiv.innerText;
 }
 function parseProfile(data) {
 	var arr = data.split('|');
 	if (arr[0] != 'LOADPAGE') return;
 	var msg = arr[1];
+	// technically done twice, here & in getTSAttempts
+	var profilePageTest = $(data).find("div:contains('tradeskill attempts')");
+	if(profilePageTest.length <= 0) return;
 
-	var tsAttempts = getTSAttempts(msg);
-	var name = getName(msg);
-
-	console.info(tsAttempts, 'attempts by', name);
+	try {
+		var tsAttempts = getTSAttempts(msg);
+		var name = getName(msg);
+		if(tsAttempts > 0 && name != null) console.info(tsAttempts, 'attempts by', name);
+	} catch(err) {
+		console.info('error occurred; page layout was updated or profile validation is off');
+	}
 }
 
 function listen_profile_msg(evt) {
