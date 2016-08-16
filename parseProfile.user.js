@@ -3,7 +3,7 @@
 // @namespace https://github.com/trigunshin/miden_quest
 // @description MQO profile parser. Currently prints TS attempts and title+username to console
 // @homepage https://trigunshin.github.com/miden_quest
-// @version 1
+// @version 2
 // @downloadURL http://trigunshin.github.io/miden_quest/parseProfile.user.js
 // @updateURL http://trigunshin.github.io/miden_quest/parseProfile.user.js
 // @include http://midenquest.com/Game.aspx
