@@ -173,7 +173,7 @@ export function getKingdomCalculators(initState) {
     const simpleReducer = (state, action) => {
         // set simple state value
         if(!_.find(actionPrefixes, (pre)=>{return action.type.startsWith(pre);})) return state||defaultState;
-        console.info(action, actionPrefixes);
+
         let newState = Object.assign({}, state);
         newState = _.set(newState, action.type, action.value||0);
 
