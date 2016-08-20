@@ -247,7 +247,7 @@ const initialState = {
         // value for selling/scouting weighted total is 1:1
         gold: {t1: 1, t2: 1, t3: 1, t4: 1, t5: 1},
         landmark: {t1: 1, t2: 1, t3: 1, t4: 1, t5: 1},
-        gem: 0, relic: 0, me: 0
+        gem: 0, relic: 0, me: 0, scroll: 0, orb: 0
     },
     expeditions: {adventurer: 0, weapons: 0, armor: 0, survival: 0},
     ts: {

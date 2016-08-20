@@ -3,6 +3,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import {connect, Provider} from 'react-redux';
 import _ from 'lodash';
+import $ from 'jquery';
 
 import {FnStatefulCalculator, StatefulSelectElement} from './dynamicComponents.jsx';
 import {StatefulCalculator} from './staticComponents.jsx';
@@ -83,12 +84,10 @@ const CraftingCalculator = (props) => {
         })}
     </div>
 };
+let initializedStore = null;
 const Container = React.createClass({
-    getDefaultProps() {
-        return {store: getStore(costCalculators)};
-    },
     getInitialState() {
-        return {currentTab: 'ts'};
+        return {currentTab: 'ts', store: initializedStore};
     },
     setKingdomTab() {
         this.setState({currentTab: 'kingdom'});
@@ -131,7 +130,7 @@ const Container = React.createClass({
             toRender = _.map(_.values(miscCalculators), (config, key) => {
                 return <StatefulCalculator {...config} key={key} />
             });
-        return <Provider store={this.props.store}>
+        return <Provider store={this.state.store}>
             <div className='container'>
                 <div>
                     <ul className="nav nav-tabs">
@@ -148,8 +147,24 @@ const Container = React.createClass({
         </Provider>;
     }
 });
+var aws_endpoint = 'http://midenquest.info/market';
 
-ReactDOM.render(
-    <Container/>,
-    document.getElementById('app')
-);
+$.ajax({
+    url: aws_endpoint,
+    type: 'GET',
+    contentType: 'application/json; charset=utf-8',
+    success: (data)=>{
+        initializedStore = getStore(costCalculators, {resources: data});
+        ReactDOM.render(
+            <Container/>,
+            document.getElementById('app')
+        );
+    },
+    error: ()=>{
+        initializedStore = getStore(costCalculators);
+        ReactDOM.render(
+            <Container/>,
+            document.getElementById('app')
+        );
+    }
+});
