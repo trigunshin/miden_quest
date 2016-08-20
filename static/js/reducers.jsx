@@ -13,7 +13,7 @@ export function getStore(costCalculators, stateUpdate) {
 	let combinedReducers = combineReducers(reducers);
 
 	// _.assign doesn't deeply compare; currently we only fetch resource values, initially
-	_.assign(defaultState.resources, stateUpdate.resources);
+	if(stateUpdate && stateUpdate.resources) _.assign(defaultState.resources, stateUpdate.resources);
 
 	let reduxStore = null;
 	// DEBUG MODE?
