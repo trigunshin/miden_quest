@@ -10,14 +10,14 @@ resource_data = {
 	'me': 0,
 	'relic': 0,
 	'gem': 0,
-	'wood': {'1': 0, '2': 0, '3': 0, '4': 0, '5': 0},
-	'fish': {'1': 0, '2': 0, '3': 0, '4': 0, '5': 0},
-	'plant': {'1': 0, '2': 0, '3': 0, '4': 0, '5': 0},
-	'ore': {'1': 0, '2': 0, '3': 0, '4': 0, '5': 0}
+	'wood': {'t1': 0, 't2': 0, 't3': 0, 't4': 0, 't5': 0},
+	'fish': {'t1': 0, 't2': 0, 't3': 0, 't4': 0, 't5': 0},
+	'plant': {'t1': 0, 't2': 0, 't3': 0, 't4': 0, 't5': 0},
+	'ore': {'t1': 0, 't2': 0, 't3': 0, 't4': 0, 't5': 0}
 }
 simple_keys = ['orb', 'scroll', 'me', 'relic', 'gem']
 deep_keys = ['wood', 'fish', 'plant', 'ore']
-tiers = [str(i) for i in range(1,6)]
+tiers = ['t'+str(i) for i in range(1,6)]
 
 def _update_prices(data):
 	for k in simple_keys:
@@ -31,13 +31,13 @@ def _update_prices(data):
 
 	return resource_data
 
-@app.route('/update_market_prices', methods=['POST'])
+@app.route('/market', methods=['POST'])
 def update_market_prices():
 	data = request.json
 	data = _update_prices(data)
 	return jsonify(data)
 
-@app.route('/update_market_prices', methods=['GET'])
+@app.route('/market', methods=['GET'])
 def get_market_prices():
 	return jsonify(resource_data)
 
