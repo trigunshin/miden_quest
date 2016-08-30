@@ -1,5 +1,6 @@
 import React from 'react';
 import _ from 'lodash';
+import numbro from 'numbro';
 import {tiers, building_costs} from './defaultStates';
 
 function getResourceColumns(resType, tiers, ts) {
@@ -9,7 +10,10 @@ function getResourceColumns(resType, tiers, ts) {
         const currentResourceCostKey = _.trim(_.join([ts.stateKeyPrefix, '.resources.', tier, ' ', _.upperFirst(type)], ''));
         const stateKey = resType.concat(tier);
         const title = _.upperFirst(tier);
-        const fn = (state)=>{return _.max([0, _.get(state, totalCostKey) - _.get(state, currentResourceCostKey, 0)]);};
+        const fn = (state)=>{
+            let diff = _.max([0, _.get(state, totalCostKey) - _.get(state, currentResourceCostKey, 0)]);
+            return numbro(diff).format('0a.00');
+        };
         return {title, cls: 'label', stateKey, fn};
     });
 }
