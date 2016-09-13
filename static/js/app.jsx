@@ -8,22 +8,22 @@ import $ from 'jquery';
 import {FnStatefulCalculator, StatefulSelectElement} from './dynamicComponents.jsx';
 import {StatefulCalculator} from './staticComponents.jsx';
 
-import {defaultState, tradeskillNames} from './defaultStates';
+import {defaultState, tradeskillNames, craftingState} from './defaultStates';
 import {getTradeskillCalculators} from './tsCalculators.jsx';
 import {getResourceCalculators} from './resourceCalculators.jsx';
 import {getExpeditionCalculators} from './expeditionCalculators.jsx';
 import {getMiscCalculators} from './miscCalculators.jsx';
 import {getBuildingCalculators} from './buildings.jsx';
-import {getCraftingCalculators} from './craftingCalculator.jsx';
 import {getKingdomCalculators} from './kingdom.jsx';
 import {getStore} from './reducers.jsx';
+
+import {CraftingPage} from './crafting/crafting.jsx';
 
 const tsCalculators = getTradeskillCalculators(defaultState);
 const resourceCalculators = getResourceCalculators(defaultState);
 const expeditionCalculators = getExpeditionCalculators(defaultState);
 const miscCalculators = getMiscCalculators(defaultState);
 const buildingCalculators = getBuildingCalculators(defaultState);
-const craftingCalculators = getCraftingCalculators(defaultState);
 const kingdomCalculators = getKingdomCalculators(defaultState);
 
 const costCalculators = {
@@ -32,7 +32,6 @@ const costCalculators = {
     buildingCalculators,
     miscCalculators,
     tsCalculators,
-    craftingCalculators,
     kingdomCalculators
 };
 
@@ -79,10 +78,8 @@ const KingdomCalculator = (props) => {
 };
 const CraftingCalculator = (props) => {
     return <div>
-        {_.map(craftingCalculators, (config, idx) => {
-            return <FnStatefulCalculator {...config} key={idx} />
-        })}
-    </div>
+        <CraftingPage data={craftingState}/>
+    </div>;
 };
 let initializedStore = null;
 const Container = React.createClass({
@@ -136,7 +133,6 @@ const Container = React.createClass({
                     <ul className="nav nav-tabs">
                         <li role="presentation" className={currentTab=='ts' ? "active" : ''} onClick={this.setTSTab}><a href="#" key={'ts_pane'}>TS</a></li>
                         <li role="presentation" className={currentTab=='resources' ? "active" : ''} onClick={this.setResourceTab}><a href="#" key={'resources_pane'}>Resources</a></li>
-                        {/*<li role="presentation" className={currentTab=='building' ? "active" : ''} onClick={this.setBuildingTab}><a href="#" key={'building_pane'}>Buildings</a></li>*/}
                         <li role="presentation" className={currentTab=='kingdom' ? "active" : ''} onClick={this.setKingdomTab}><a href="#" key={'kingdom_pane'}>Kingdom</a></li>
                         <li role="presentation" className={currentTab=='crafting' ? "active" : ''} onClick={this.setCraftingTab}><a href="#" key={'crafting_pane'}>Crafting</a></li>
                         <li role="presentation" className={currentTab=='misc' ? "active" : ''} onClick={this.setMiscTab}><a href="#" key={'misc_pane'}>Misc</a></li>

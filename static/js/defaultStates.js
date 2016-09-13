@@ -232,13 +232,6 @@ const initialState = {
         enchantTotalEnchants: 2850,
         enchantMEUsed: 5700
     },
-    crafting: {
-        craftLevel: 0,
-        workshops: 20,
-        tier: 10,
-        start: 4,
-        end: 12
-    },
     resources: {
         wood: {t1: 0, t2: 0, t3: 0, t4: 0, t5: 0},
         ore: {t1: 0, t2: 0, t3: 0, t4: 0, t5: 0},
@@ -281,3 +274,6 @@ export const tradeskillResourceMap = {gathering: 'plant', mining: 'ore', fishing
 export const relicBonusFactors = {amount: 1.5, xp: .2, luck: .3, load: 3, drop: .5};
 export const tierPrice = {1: 50, 2: 225, 3: 500, 4: 1000, 5: 2500, 6: 5000, 7: 11500, 8: 25000, 9: 65000, 10: 120000, 11: 250000, 12: 515000, 13: 1000000, 14: 2500000, 15: 10000000, 16: 20000000};
 export const doubleDigitFormat = '0,0.00';
+
+import {Crafting} from './crafting/craftingState.jsx';
+export const craftingState = new Crafting();
