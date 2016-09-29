@@ -99,7 +99,7 @@ export const building_costs = {
             't1 Wood': {base: base_costs.t1, factor: 1.25},
             't2 Wood': {base: base_costs.t2, factor: 1.25},
             't1 Ore': {base: base_costs.t1, factor: 1.25},
-            't1 Plant': {base: base_costs.t3, factor: 1.25}
+            't3 Plant': {base: base_costs.t3, factor: 1.25}
         },
         upkeep: 125,
         label: 'Billboard'
