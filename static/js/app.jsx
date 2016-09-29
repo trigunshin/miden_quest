@@ -8,7 +8,7 @@ import $ from 'jquery';
 import {FnStatefulCalculator, StatefulSelectElement} from './dynamicComponents.jsx';
 import {StatefulCalculator} from './staticComponents.jsx';
 
-import {defaultState, tradeskillNames, craftingState} from './defaultStates';
+import {defaultState, tradeskillNames, craftingState, tradeskillState} from './defaultStates';
 import {getTradeskillCalculators} from './tsCalculators.jsx';
 import {getResourceCalculators} from './resourceCalculators.jsx';
 import {getExpeditionCalculators} from './expeditionCalculators.jsx';
@@ -18,6 +18,7 @@ import {getKingdomCalculators} from './kingdom.jsx';
 import {getStore} from './reducers.jsx';
 
 import {CraftingPage} from './crafting/crafting.jsx';
+import {TradeskillPage} from './tradeskill/tradeskill.jsx';
 
 const tsCalculators = getTradeskillCalculators(defaultState);
 const resourceCalculators = getResourceCalculators(defaultState);
@@ -37,6 +38,7 @@ const costCalculators = {
 
 // Higher order components
 const Tradeskills = () => {
+    return <TradeskillPage data={tradeskillState} />;
     return <div>
         <div className='row'>
             <div className='col-sm-2'>
@@ -122,7 +124,7 @@ const Container = React.createClass({
         else if(this.state.currentTab == 'expeditions')
             toRender = <Expeditions expeditionCalculators={expeditionCalculators} />;
         else if(this.state.currentTab == 'ts')
-            toRender = <Tradeskills />;
+            toRender = <Tradeskills data={this.props.data} />;
         else
             toRender = _.map(_.values(miscCalculators), (config, key) => {
                 return <StatefulCalculator {...config} key={key} />
@@ -150,9 +152,10 @@ $.ajax({
     type: 'GET',
     contentType: 'application/json; charset=utf-8',
     success: (data)=>{
-        initializedStore = getStore(costCalculators, {resources: data});
+        const datum = {resources: data};
+        initializedStore = getStore(costCalculators, datum);
         ReactDOM.render(
-            <Container/>,
+            <Container data={datum}/>,
             document.getElementById('app')
         );
     },

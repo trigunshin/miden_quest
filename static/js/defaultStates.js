@@ -277,3 +277,6 @@ export const doubleDigitFormat = '0,0.00';
 
 import {Crafting} from './crafting/craftingState.jsx';
 export const craftingState = new Crafting();
+
+import {Tradeskill} from './tradeskill/tradeskillState.jsx';
+export const tradeskillState = new Tradeskill();

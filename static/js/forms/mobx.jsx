@@ -1,7 +1,5 @@
 import React, {PropTypes} from 'react';
 import _ from 'lodash';
-import {observer, observable, computed} from "mobx-react";
-import {extendObservable} from "mobx";
 
 export const InputElement = React.createClass({
 	propTypes: {
@@ -25,3 +23,10 @@ export const InputElement = React.createClass({
         </div>);
     }
 });
+
+// Selectable options
+export const SelectElement = ({options, value, onChange}) => {
+    return <select className="form-control" value={value} onChange={onChange}>
+        {_.map(options, (option) => {const lowerOption = _.lowerCase(option);return <option value={lowerOption} key={lowerOption}>{option}</option>})}
+    </select>;
+};
