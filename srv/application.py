@@ -57,13 +57,9 @@ def update_market_prices():
 	data = _update_prices(data)
 	return jsonify(data)
 
-@app.route('/players/diffs/36', methods=['POST'])
-def get_36h_diff():
-	data = request.json
-	user_data = data['user']
-	user_name = user_data['username']
-
-	user = _ensure_user(user_name)
+@app.route('/players/<username>/diffs/36', methods=['GET'])
+def get_36h_diff(username):
+	user = _ensure_user(username)
 	diffs = get_user_view_diff(user, 36)
 
 	recent = diffs['recent']
