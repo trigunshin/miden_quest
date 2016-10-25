@@ -11,6 +11,10 @@
 // @include https://www.midenquest.com/Game.aspx
 // @grant GM_log
 // ==/UserScript==
+var postToURL = true;
+var marketPostURL = 'https://midenquest.info/players';
+var titles = ["Wanderer","Talkative","Voluble","Mouthy","Crafter","Enchanter","Catcher","Clear-Minded","Sharky","Super-Reeler","Sailor","Salmon League","Flyfish League","Picker","Herbalist","Shaman","Witch","Alchemist","Green Thumb","Plant Whisperer","Nimbus Picker","Lucky","Charmed","Fortunate","Blessed","Serendipity","Successful","Combatant","Gladiator","Brave","Mercenary","Digger","Dirty","Mountainman","Dwarfy","Iron-Veined","Silver-Veined","Obsidian-Veined","Mythril-Veined","Quester","Examiner","Inquirer","Town Hero","Accomplished","Boyscout","Snooper","Swifty","Light-Footed","Headhunter","Prospector","Inspector","Spy","Master Scout","Part-Timer","Employee","Seller","Entrepreneur","Businessman","Mogul","Tycoon","Magnate","Market Manipulator","Strong","Tough","Vigorous","Zealous","Fervent","Hobbyist","Packrat","Hoarder","Collector","Winner","Workhorse","Busy bee","Pro","Dedicated","Focused","Idler","Insane","Crazed","Obessed","Traveler","Explorer","Adventurer","Seeker","Nomad","Discoverer","Globetrotter","Seen-It-All","Cutter","Logger","Forestman","Nature's Foe","Pine Arm","Oak Arm","Maple Arm","Rescuer","Savior","Practitioner","Workaholic","Runaway Princess","Maniac", "Fishmonger", "Molten Lord", "Heatstroked", "Sun Champion", "Dragon League", "Diamond Skin", "Obsessed", "Forest Mover", "Earth's Avatar", "Cave Dweller"];
+
 function getTSAttempts(data) {
 	var tsDiv = $(data).find("div:contains('tradeskill attempts')");
 	var tsNode = tsDiv[tsDiv.length-1];
@@ -19,6 +23,14 @@ function getTSAttempts(data) {
 	var tsAttemptNode = tsSiblings[3];
 	var tsAttempts = tsAttemptNode.innerText.replace(/ /g, '');
 	return tsAttempts;
+}
+function stripTitle(titledName) {
+	for(var i=0,iLen=titles.length;i<iLen;i++) {
+		if(titledName.startsWith(titles[i])) {
+			return titledName.replace(titles[i], '').trim();
+		}
+	}
+	return null;
 }
 function getName(data) {
 	var barDiv = $("div.CrumbBar")[0];
@@ -29,7 +41,20 @@ function getName(data) {
 	var profileContentChild = barParentChildren[4];
 	// now we want first children of next 3 nodes to hit the title div
 	var titleDiv = profileContentChild.childNodes[1].childNodes[1].childNodes[1];
-	return titleDiv.innerText;
+	return stripTitle(titleDiv.innerText);
+}
+function postData(name, tsAttempts) {
+	var postData = {
+		user: {'username': name.toLowerCase()},
+		profile: {'actions': tsAttempts}
+	};
+	var request = $.ajax({
+		url: marketPostURL,
+		type: 'post',
+		dataType: "json",
+		contentType: 'application/json',
+		data: JSON.stringify(postData)
+	});
 }
 function parseProfile(data) {
 	var arr = data.split('|');
@@ -42,9 +67,16 @@ function parseProfile(data) {
 	try {
 		var tsAttempts = getTSAttempts(msg);
 		var name = getName(msg);
-		if(tsAttempts > 0 && name != null) console.info(tsAttempts, 'attempts by', name);
+		if(tsAttempts > 0 && name != null) {
+			console.info(tsAttempts, 'attempts by', name);
+			if(postToURL) {
+				postData(name, tsAttempts);
+			}
+		} else {
+			console.info('problem parsing. name:', name, 'tsAttempts:', tsAttempts);
+		}
 	} catch(err) {
-		console.info('error occurred; page layout was updated or profile validation is off');
+		console.info('error occurred; page layout was updated, profile validation is off, or something else');
 	}
 }
 
