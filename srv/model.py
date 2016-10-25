@@ -4,6 +4,46 @@ from sqlalchemy import asc, desc
 
 db = SQLAlchemy()
 
+class UserGroup(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(250), unique=True)
+    created_on = db.Column(db.DateTime)
+    
+    def __init__(self, name, created_on=None):
+        self.name = name
+        if created_on is None:
+            created_on = datetime.utcnow()
+        self.created_on = created_on
+
+    def __repr__(self):
+        return '<UserGroup %r>' % self.name
+
+    def save(self):
+        db.session.add(self)
+        db.session.commit()
+
+class UserGroupUserMap(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    created_on = db.Column(db.DateTime)
+
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    group_id = db.Column(db.Integer, db.ForeignKey('user_group.id'))
+    
+    def __init__(self, name, user_id, group_id, created_on=None):
+        self.name = name
+        if created_on is None:
+            created_on = datetime.utcnow()
+        self.created_on = created_on
+        self.user_id = user_id
+        self.group_id = group_id
+
+    def __repr__(self):
+        return '<UserGroup %r>' % self.name
+
+    def save(self):
+        db.session.add(self)
+        db.session.commit()
+
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(250), unique=True)
@@ -21,13 +61,6 @@ class User(db.Model):
     def save(self):
         db.session.add(self)
         db.session.commit()
-
-    def get_action_diff(self, hours=36):
-        ts = datetime.now() - timedelta(hours=hours)
-
-        # .order_by(desc(Notes.added_at))
-
-        return self.query.filter_by(created_on>=ts).order_by(desc(self.created_on))
 
 class UserProfileView(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -65,6 +98,25 @@ def get_user_view_diff(user, hours):
     ret['oldest'] = get_oldest_user_view(user, hours)
     return ret
 
+def ensure_user(user_name):
+    u = User.query.filter_by(username=user_name).first()
+    if u is None:
+        u = User(user_name)
+        u.save()
+    return u
+
+def ensure_group(name):
+    u = UserGroup.query.filter_by(name=name).first()
+    if u is None:
+        u = UserGroup(name)
+        u.save()
+    return u
+
+def record_profile(user, profile):
+    actions = profile['actions']
+    p = UserProfileView(user, actions)
+    p.save()
+    return p
 
 """
 clear;curl -H "Content-Type: application/json" -X POST -d '{"user":{"username":"derivagral"}, "profile":{"actions":6000}}' http://localhost:5000/players

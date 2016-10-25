@@ -6,7 +6,7 @@ app.config.from_pyfile('config.py')
 CORS(app)
 
 #import/init DB
-from model import db, User, UserProfileView, get_user_view_diff
+from model import db, User, UserProfileView, get_user_view_diff, ensure_group, ensure_user, record_profile
 db.init_app(app)
 with app.test_request_context():
 	db.create_all()
@@ -38,19 +38,6 @@ def _update_prices(data):
 
 	return resource_data
 
-def _ensure_user(user_name):
-	u = User.query.filter_by(username=user_name).first()
-	if u is None:
-		u = User(user_name)
-		u.save()
-	return u
-
-def _record_profile(user, profile):
-	actions = profile['actions']
-	p = UserProfileView(user, actions)
-	p.save()
-	return p
-
 @app.route('/market', methods=['POST'])
 def update_market_prices():
 	data = request.json
@@ -59,7 +46,7 @@ def update_market_prices():
 
 @app.route('/players/<username>/diffs/36', methods=['GET'])
 def get_36h_diff(username):
-	user = _ensure_user(username)
+	user = ensure_user(username)
 	diffs = get_user_view_diff(user, 36)
 
 	recent = diffs['recent']
@@ -75,8 +62,8 @@ def update_player_info():
 	user_name = user_data['username']
 	user_profile = data['profile']
 
-	user = _ensure_user(user_name)
-	profile = _record_profile(user, user_profile)
+	user = ensure_user(user_name)
+	profile = record_profile(user, user_profile)
 
 	return jsonify({'user_name': user.username, 'actions': profile.actions, 'ts': profile.created_on})
 
