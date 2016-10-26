@@ -3,7 +3,7 @@
 // @namespace https://github.com/trigunshin/miden_quest
 // @description MQO market overview parser. Sends data to server.
 // @homepage https://trigunshin.github.com/miden_quest
-// @version 1
+// @version 2
 // @downloadURL http://trigunshin.github.io/miden_quest/userScripts/parseProfile.user.js
 // @updateURL http://trigunshin.github.io/miden_quest/userScripts/parseProfile.user.js
 // @include http://midenquest.com/Game.aspx
@@ -26,7 +26,7 @@ var resource_id_prefix = 'div#ShortcutRes';
 var simple_keys = ['orb', 'scroll', 'me', 'relic', 'gem'];
 var deep_keys = ['wood', 'fish', 'plant', 'ore'];
 var tiers = ['1','2','3','4','5'];
-var aws_endpoint = 'http://midenquest.info/market';
+var aws_endpoint = 'http://midenquest.info/market/';
 
 function sendDataUpdate(data) {
 	$.ajax({
