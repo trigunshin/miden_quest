@@ -4,10 +4,18 @@ from sqlalchemy import asc, desc
 
 db = SQLAlchemy()
 
+groups_users = db.Table(
+    'user_group_user_map',
+    db.Column('user_id', db.Integer,
+              db.ForeignKey('user.id')),
+    db.Column('group_id', db.Integer, db.ForeignKey('user_group.id'))
+)
+
 class UserGroup(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(250), unique=True)
     created_on = db.Column(db.DateTime)
+    users = db.relationship('User', secondary=groups_users, backref='groups')
     
     def __init__(self, name, created_on=None):
         self.name = name
@@ -22,35 +30,13 @@ class UserGroup(db.Model):
         db.session.add(self)
         db.session.commit()
 
-class UserGroupUserMap(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    created_on = db.Column(db.DateTime)
-
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-    group_id = db.Column(db.Integer, db.ForeignKey('user_group.id'))
-    
-    def __init__(self, name, user_id, group_id, created_on=None):
-        self.name = name
-        if created_on is None:
-            created_on = datetime.utcnow()
-        self.created_on = created_on
-        self.user_id = user_id
-        self.group_id = group_id
-
-    def __repr__(self):
-        return '<UserGroup %r>' % self.name
-
-    def save(self):
-        db.session.add(self)
-        db.session.commit()
-
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(250), unique=True)
     created_on = db.Column(db.DateTime)
     
     def __init__(self, username, created_on=None):
-        self.username = username
+        self.username = username.lower()
         if created_on is None:
             created_on = datetime.utcnow()
         self.created_on = created_on
@@ -118,7 +104,27 @@ def record_profile(user, profile):
     p.save()
     return p
 
+def associate_user_group(group, user):
+    group.users.append(user)
+    db.session.add(group)
+    db.session.commit()
+    return group, user
+
+def disassociate_user_group(group, user):
+    group.users.remove(user)
+    db.session.add(group)
+    db.session.commit()
+    return group, user
+
 """
 clear;curl -H "Content-Type: application/json" -X POST -d '{"user":{"username":"derivagral"}, "profile":{"actions":6000}}' http://localhost:5000/players
 clear;curl -H "Content-Type: application/json" -X POST -d '{"user":{"username":"derivagral"}}' http://localhost:5000/players/diffs/36
+
+clear;curl -H "Content-Type: application/json" -X POST http://localhost:5000/group/Venice
+clear;curl -H "Content-Type: application/json" -X POST http://localhost:5000/group/Venice/players/derivagral
+
+clear;curl -H "Content-Type: application/json" -X POST http://localhost:5000/group/Venice/players/ikitoro
+clear;curl -H "Content-Type: application/json" -X DELETE http://localhost:5000/group/Venice/players/ikitoro
+
+clear;curl -H "Content-Type: application/json" -X GET http://localhost:5000/group/Venice
 #"""
