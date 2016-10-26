@@ -111,7 +111,7 @@ def associate_user_group(group, user):
     return group, user
 
 def disassociate_user_group(group, user):
-    group.users.remove(user)
+    group.users = [u for u in group.users if u != user]
     db.session.add(group)
     db.session.commit()
     return group, user
