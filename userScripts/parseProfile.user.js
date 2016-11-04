@@ -3,7 +3,7 @@
 // @namespace https://github.com/trigunshin/miden_quest
 // @description MQO profile parser. Currently prints TS attempts and title+username to console
 // @homepage https://trigunshin.github.com/miden_quest
-// @version 4
+// @version 5
 // @downloadURL http://trigunshin.github.io/miden_quest/userScripts/parseProfile.user.js
 // @updateURL http://trigunshin.github.io/miden_quest/userScripts/parseProfile.user.js
 // @include http://midenquest.com/Game.aspx
@@ -13,7 +13,7 @@
 // ==/UserScript==
 var postToURL = true;
 var marketPostURL = 'https://midenquest.info/players';
-var titles = ["Wanderer","Talkative","Voluble","Mouthy","Crafter","Enchanter","Catcher","Clear-Minded","Sharky","Super-Reeler","Sailor","Salmon League","Flyfish League","Picker","Herbalist","Shaman","Witch","Alchemist","Green Thumb","Plant Whisperer","Nimbus Picker","Lucky","Charmed","Fortunate","Blessed","Serendipity","Successful","Combatant","Gladiator","Brave","Mercenary","Digger","Dirty","Mountainman","Dwarfy","Iron-Veined","Silver-Veined","Obsidian-Veined","Mythril-Veined","Quester","Examiner","Inquirer","Town Hero","Accomplished","Boyscout","Snooper","Swifty","Light-Footed","Headhunter","Prospector","Inspector","Spy","Master Scout","Part-Timer","Employee","Seller","Entrepreneur","Businessman","Mogul","Tycoon","Magnate","Market Manipulator","Strong","Tough","Vigorous","Zealous","Fervent","Hobbyist","Packrat","Hoarder","Collector","Winner","Workhorse","Busy bee","Pro","Dedicated","Focused","Idler","Insane","Crazed","Obessed","Traveler","Explorer","Adventurer","Seeker","Nomad","Discoverer","Globetrotter","Seen-It-All","Cutter","Logger","Forestman","Nature's Foe","Pine Arm","Oak Arm","Maple Arm","Rescuer","Savior","Practitioner","Workaholic","Runaway Princess","Maniac", "Fishmonger", "Molten Lord", "Heatstroked", "Sun Champion", "Dragon League", "Diamond Skin", "Obsessed", "Forest Mover", "Earth's Avatar", "Cave Dweller"];
+var titles = ["Leafy", "Harvester", "Harvest Soul","Wanderer","Talkative","Voluble","Mouthy","Crafter","Enchanter","Catcher","Clear-Minded","Sharky","Super-Reeler","Sailor","Salmon League","Flyfish League","Picker","Herbalist","Shaman","Witch","Alchemist","Green Thumb","Plant Whisperer","Nimbus Picker","Lucky","Charmed","Fortunate","Blessed","Serendipity","Successful","Combatant","Gladiator","Brave","Mercenary","Digger","Dirty","Mountainman","Dwarfy","Iron-Veined","Silver-Veined","Obsidian-Veined","Mythril-Veined","Quester","Examiner","Inquirer","Town Hero","Accomplished","Boyscout","Snooper","Swifty","Light-Footed","Headhunter","Prospector","Inspector","Spy","Master Scout","Part-Timer","Employee","Seller","Entrepreneur","Businessman","Mogul","Tycoon","Magnate","Market Manipulator","Strong","Tough","Vigorous","Zealous","Fervent","Hobbyist","Packrat","Hoarder","Collector","Winner","Workhorse","Busy bee","Pro","Dedicated","Focused","Idler","Insane","Crazed","Obessed","Traveler","Explorer","Adventurer","Seeker","Nomad","Discoverer","Globetrotter","Seen-It-All","Cutter","Logger","Forestman","Nature's Foe","Pine Arm","Oak Arm","Maple Arm","Rescuer","Savior","Practitioner","Workaholic","Runaway Princess","Maniac", "Fishmonger", "Molten Lord", "Heatstroked", "Sun Champion", "Dragon League", "Diamond Skin", "Obsessed", "Forest Mover", "Earth's Avatar", "Cave Dweller"];
 
 function getTSAttempts(data) {
 	var tsDiv = $(data).find("div:contains('tradeskill attempts')");
@@ -86,7 +86,7 @@ function listen_profile_msg(evt) {
 }
 // set up handler & hook original game handler in
 if(typeof listen_profile_original_msg === 'undefined') {
-	console.info('TS attempt parser not yet loaded, loading...');
+	console.info('listen_profile_original_msg not yet loaded, loading...');
 	var listen_profile_original_msg = ws.onmessage;
 	ws.onmessage=listen_profile_msg;
 } else {
