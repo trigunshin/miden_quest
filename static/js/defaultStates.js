@@ -6,6 +6,7 @@ export const base_costs = {
     t5: 1400,
     gem: 10,
     gold: 100000,
+    navigation_gold: 500000,
     relic: 350,
     expedition_gold: 200000,
     silo: 1050
@@ -199,6 +200,28 @@ export const building_costs = {
         },
         upkeep: 125,
         label: 'Toolshed'
+    },
+    wharf: {
+        cost: {
+            'Gold': {base: base_costs.navigation_gold, factor: 1.25},
+            't1 Wood': {base: base_costs.t1, factor: 1.25},
+            't1 Plant': {base: base_costs.t1, factor: 1.25},
+            't3 Ore': {base: base_costs.t3, factor: 1.25},
+            't3 Fish': {base: base_costs.t3, factor: 1.25}
+        },
+        upkeep: 125,
+        label: 'Wharf'
+    },
+    townhall: {
+        cost: {
+            'Gold': {base: base_costs.navigation_gold, factor: 1.25},
+            't1 Ore': {base: base_costs.t1 * 2, factor: 1.25},
+            't1 Plant': {base: base_costs.t1 * 2, factor: 1.25},
+            't4 Wood': {base: base_costs.t4 * 2, factor: 1.25},
+            't5 Plant': {base: base_costs.t5 * 2, factor: 1.25}
+        },
+        upkeep: 125,
+        label: 'Town Hall'
     }
 };
 
