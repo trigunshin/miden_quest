@@ -3,7 +3,7 @@
 // @namespace https://github.com/trigunshin/miden_quest
 // @description MQO profile parser. Currently prints TS attempts and title+username to console
 // @homepage https://trigunshin.github.com/miden_quest
-// @version 5
+// @version 6
 // @downloadURL http://trigunshin.github.io/miden_quest/userScripts/parseProfile.user.js
 // @updateURL http://trigunshin.github.io/miden_quest/userScripts/parseProfile.user.js
 // @include http://midenquest.com/Game.aspx
@@ -12,7 +12,7 @@
 // @grant GM_log
 // ==/UserScript==
 var postToURL = true;
-var marketPostURL = 'https://midenquest.info/players';
+var marketPostURL = 'https://midenquest.info/players/';
 var titles = ["Leafy", "Harvester", "Harvest Soul","Wanderer","Talkative","Voluble","Mouthy","Crafter","Enchanter","Catcher","Clear-Minded","Sharky","Super-Reeler","Sailor","Salmon League","Flyfish League","Picker","Herbalist","Shaman","Witch","Alchemist","Green Thumb","Plant Whisperer","Nimbus Picker","Lucky","Charmed","Fortunate","Blessed","Serendipity","Successful","Combatant","Gladiator","Brave","Mercenary","Digger","Dirty","Mountainman","Dwarfy","Iron-Veined","Silver-Veined","Obsidian-Veined","Mythril-Veined","Quester","Examiner","Inquirer","Town Hero","Accomplished","Boyscout","Snooper","Swifty","Light-Footed","Headhunter","Prospector","Inspector","Spy","Master Scout","Part-Timer","Employee","Seller","Entrepreneur","Businessman","Mogul","Tycoon","Magnate","Market Manipulator","Strong","Tough","Vigorous","Zealous","Fervent","Hobbyist","Packrat","Hoarder","Collector","Winner","Workhorse","Busy bee","Pro","Dedicated","Focused","Idler","Insane","Crazed","Obessed","Traveler","Explorer","Adventurer","Seeker","Nomad","Discoverer","Globetrotter","Seen-It-All","Cutter","Logger","Forestman","Nature's Foe","Pine Arm","Oak Arm","Maple Arm","Rescuer","Savior","Practitioner","Workaholic","Runaway Princess","Maniac", "Fishmonger", "Molten Lord", "Heatstroked", "Sun Champion", "Dragon League", "Diamond Skin", "Obsessed", "Forest Mover", "Earth's Avatar", "Cave Dweller"];
 
 function getTSAttempts(data) {
