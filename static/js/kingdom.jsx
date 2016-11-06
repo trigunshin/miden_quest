@@ -22,6 +22,7 @@ function getResourceColumns(resType, tiers, ts) {
 const tradeBuildingKeys = ['mine', 'watchtower', 'lumber_camp', 'fishing_hut', 'trade_center', 'botanist_house'];
 const utilityFirstRow = ['locator', 'gem_mine', 'billboard', 'barracks', 'keep', 'farm'];
 const utilitySecondRow = ['silo', 'adventurer_guild', 'inn', 'academy', 'workshop', 'toolshed'];
+const utilityThirdRow = ['wharf', 'townhall'];
 
 function getBuildingPair(label, key, ts) {
     let pre = ts.stateKeyPrefix;
@@ -59,6 +60,7 @@ let config = {
     trades: {label: 'Tradeskills', stateKeyPrefix: 'kingdom', cols: _.partial(getBuildings, tradeBuildingKeys)},
     utilFirst: {label: 'Buildings', stateKeyPrefix: 'kingdom', cols: _.partial(getBuildings, utilityFirstRow)},
     utilSecond: {label: 'Buildings', stateKeyPrefix: 'kingdom', cols: _.partial(getBuildings, utilitySecondRow)},
+    utilThird: {label: 'Buildings', stateKeyPrefix: 'kingdom', cols: _.partial(getBuildings, utilityThirdRow)},
 };
 
 function validateStartFinish(state, key, type, value) {
