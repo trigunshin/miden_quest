@@ -269,7 +269,7 @@ const initialState = {
     ts: {
         currentTS: 'selling',
         level: 1,
-        xp: {gem: 0, relic: 0},
+        xp: {gem: 0, relic: 0, navigation: 0},
         amount: {gem: 0, relic: 0, kingdom: 0, we: 0, global: 1},
         luck: {relic: 0, kingdom: 0, t1: 90, t2: 60, t3: 30, t4: 15, t5: 5, t0: 100}
     },
