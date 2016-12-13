@@ -1,10 +1,11 @@
-import React, {Component, PropTypes} from 'react';
+import React, {Component, PropTypes, cloneElement} from 'react';
 import _ from 'lodash';
 import {observer} from "mobx-react";
+import {connect} from 'react-redux';
 import {observable, computed} from "mobx";
 import {InputElement, SelectElement} from '../forms/mobx.jsx';
 
-import {tradeskillNames} from '../defaultStates';
+import {tradeskillNames, tradeskillResourceMap} from '../defaultStates';
 
 function getTradeskillInput(field, props, defaultValue) {
     return {
@@ -38,7 +39,7 @@ class TradeExperienceRow extends Component {
                 <div className='col-md-1'>Level</div>
                 <div className='col-md-1'>Relic XP</div>
                 <div className='col-md-1'>Gem XP</div>
-                <div className='col-md-1'>Navigation XP</div>
+                <div className='col-md-1'>Island XP</div>
             </div>
             <div className='row'>
                 <InputElement {...config.level} />
@@ -183,6 +184,99 @@ class TierChanceRow extends Component {
 }
 
 @observer
+class TierAmountRow extends Component {
+    static propTypes = {data: PropTypes.object.isRequired};
+    render() {
+        return <div>
+            <div className='row'>
+                <h4>Tier Amounts</h4>
+            </div>
+            <div className='row'>
+                <div className='col-md-1'>T1</div>
+                <div className='col-md-1'>T2</div>
+                <div className='col-md-1'>T3</div>
+                <div className='col-md-1'>T4</div>
+                <div className='col-md-1'>T5</div>
+            </div>
+            <div className='row'>
+                <div className='col-md-1'>{this.props.data.t1Amount}</div>
+                <div className='col-md-1'>{this.props.data.t2Amount}</div>
+                <div className='col-md-1'>{this.props.data.t3Amount}</div>
+                <div className='col-md-1'>{this.props.data.t4Amount}</div>
+                <div className='col-md-1'>{this.props.data.t5Amount}</div>
+            </div>
+        </div>
+    }
+}
+
+@observer
+class TierAverageAmountRow extends Component {
+    static propTypes = {data: PropTypes.object.isRequired};
+    render() {
+        return <div>
+            <div className='row'>
+                <h4>Average Tier Amount per Action</h4>
+            </div>
+            <div className='row'>
+                <div className='col-md-1'>T1</div>
+                <div className='col-md-1'>T2</div>
+                <div className='col-md-1'>T3</div>
+                <div className='col-md-1'>T4</div>
+                <div className='col-md-1'>T5</div>
+            </div>
+            <div className='row'>
+                <div className='col-md-1'>{this.props.data.t1AmountEv}</div>
+                <div className='col-md-1'>{this.props.data.t2AmountEv}</div>
+                <div className='col-md-1'>{this.props.data.t3AmountEv}</div>
+                <div className='col-md-1'>{this.props.data.t4AmountEv}</div>
+                <div className='col-md-1'>{this.props.data.t5AmountEv}</div>
+            </div>
+        </div>
+    }
+}
+
+@observer
+class TierValueEvRow extends Component {
+    static propTypes = {data: PropTypes.object.isRequired};
+    render() {
+        return <div>
+            <div className='row'>
+                <h4>Average {this.props.data.currentTrade === 'scouting' ? 'Landmarks' : 'Gold'} per Action</h4>
+            </div>
+            <div className='row'>
+                <div className='col-md-1'>Value</div>
+            </div>
+            <div className='row'>
+                <div className='col-md-1'>{this.props.data.weightedValue}</div>
+            </div>
+        </div>
+    }
+}
+
+@observer
+class TierUpgradesRow extends Component {
+    static propTypes = {data: PropTypes.object.isRequired};
+    render() {
+        const gemString = this.props.data.currentTrade === 'selling' ? 'Gold' : 'Resources';
+        const tradeResultString = this.props.data.currentTrade === 'scouting' ? 'Landmarks' : 'Gold';
+
+        return <div>
+            <div className='row'>
+                <h4>Average {tradeResultString} per Action</h4>
+            </div>
+            <div className='row'>
+                <div className='col-md-1'>Relic Amount</div>
+                <div className='col-md-1'>Relic Luck</div>
+                <div className='col-md-1'>Gem {gemString}</div>
+            </div>
+            <div className='row'>
+                <div className='col-md-1'>{this.props.data.relicAmountUpgrade}</div>
+            </div>
+        </div>
+    }
+}
+
+@observer
 class TradeskillView extends Component {
     static propTypes = {data: PropTypes.object.isRequired};
     render() {
@@ -191,7 +285,12 @@ class TradeskillView extends Component {
             <TradeExperienceRow data={this.props.data} />
             <TradeAmountRow data={this.props.data} />
             <TradeLuckRow data={this.props.data} />
+
             <TierChanceRow data={this.props.data} />
+            <TierAmountRow data={this.props.data} />
+            <TierAverageAmountRow data={this.props.data} />
+            <TierValueEvRow data={this.props.data} />
+            <TierUpgradesRow data={this.props.data} />
         </div>;
     }
 };

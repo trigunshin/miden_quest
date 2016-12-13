@@ -2,7 +2,7 @@ import {tierFactors, tiersXp} from '../defaultStates';
 import {getTSChance} from './tradeskillChance';
 
 function getTierXp(tier, tsLevel, relicXp, gemXp, globalBonus, navigationXp) {
-    return relicXp + (1 + (tsLevel*1.5)/45 + gemXp / 100) * tiersXp[tier] * (globalBonus + navigationXp/100);
+    return relicXp + (1 + (tsLevel*1.485)/45 + gemXp / 100) * tiersXp[tier] * (globalBonus + navigationXp/100);
 }
 export function getActionXp(tiers, state) {
     const {relicXp, level, gemXp, globalBonus, navigationXp} = state;

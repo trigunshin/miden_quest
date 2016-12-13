@@ -1,12 +1,12 @@
 import {getTSChance} from './tradeskillChance';
-import {tierFactors, tsAmountFactors, tradeskillResourceMap} from './defaultStates';
+import {tierFactors, tsAmountFactors, tradeskillResourceMap} from '../defaultStates';
 
-function _getTierOutput(tsLevel, relicRes, workEff, kingdomBonus, gemBonus, globalBonus, amountFactor, tierFactor) {
+export function _getTierOutput(tsLevel, relicRes, workEff, kingdomBonus, gemBonus, globalBonus, amountFactor, tierFactor) {
     // amountFactor * (Level + Efficiency + Relics) * Kingdom * Gem * Global
-    let ret = ((1+tsLevel/100*tierFactor) + (workEff+relicRes)/100*tierFactor) * (1+kingdomBonus/100) * (1+gemBonus/100) * globalBonus * amountFactor;
+    let ret = ((1+tsLevel*2/100*tierFactor) + (workEff+relicRes)/100*tierFactor) * (1+kingdomBonus/100) * (1+gemBonus/100) * globalBonus * amountFactor;
     return ret.toFixed(2);
 }
-function _getTierOutputArgs(tier, state) {
+export function _getTierOutputArgs(tier, state) {
     let currentTS = state.currentTrade;
     return {
         level: state.level,
@@ -19,7 +19,7 @@ function _getTierOutputArgs(tier, state) {
         tierFactor: tierFactors[tier]
     };
 }
-function getTierOutput(tier, state) {
+export function getTierOutput(tier, state) {
     let args = _.values(_getTierOutputArgs(tier, state));
     return _getTierOutput.apply(this, args);
 }
@@ -30,15 +30,19 @@ function getWeightedOutput(tier, state) {
     return (tierOutput * tierChance).toFixed(2)||0;
 }
 
-function _factorAmountsByCost(tiers, tierAmounts, state) {
+export function _factorAmountsByCost(tierAmounts, state) {
     const currentTS = state.currentTrade;
-    return _.map(_.zipObject(tiers, tierAmounts), (amount, tier) => {
+    return _.map(tierAmounts, (datum) => {
+        const {tier, amount} = datum;
         return amount * _.get(state, 'resources.'.concat(tradeskillResourceMap[currentTS], '.', tier), 0);
     });
 }
-function getTotalWeightedOutput(tiers, state) {
+export function getTotalWeightedOutput(tiers, state) {
     const perTierAmounts = _.map(tiers, (tier) => {
-        return parseFloat(getWeightedOutput(tier, state));
+        return {
+            tier: tier,
+            amount: parseFloat(getWeightedOutput(tier, state))
+        };
     });
-    return _.sum(_factorAmountsByCost(tiers, perTierAmounts, state)).toFixed(2);
+    return _.sum(_factorAmountsByCost(perTierAmounts, state)).toFixed(2);
 }

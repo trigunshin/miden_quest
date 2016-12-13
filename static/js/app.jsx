@@ -38,6 +38,8 @@ const costCalculators = {
 
 // Higher order components
 const Tradeskills = () => {
+    const resourceData = initializedStore ? initializedStore.getState().resources : {};
+    tradeskillState.resourcePrices = resourceData;
     return <TradeskillPage data={tradeskillState} />;
     return <div>
         <div className='row'>
