@@ -3,7 +3,7 @@
 // @namespace https://github.com/trigunshin/miden_quest
 // @description MQO market overview parser. Sends data to server.
 // @homepage https://trigunshin.github.com/miden_quest
-// @version 3
+// @version 4
 // @downloadURL http://trigunshin.github.io/miden_quest/userScripts/parseMarketOverview.user.js
 // @updateURL http://trigunshin.github.io/miden_quest/userScripts/parseMarketOverview.user.js
 // @include http://midenquest.com/Game.aspx
