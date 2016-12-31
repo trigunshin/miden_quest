@@ -152,7 +152,8 @@ var aws_endpoint = '//midenquest.info/market';
 $.ajax({
     url: aws_endpoint,
     type: 'GET',
-    contentType: 'application/json; charset=utf-8',
+    //accepts: 'application/json; charset=utf-8',
+    //contentType: 'application/json; charset=utf-8',
     success: (data)=>{
         initializedStore = getStore(costCalculators, {resources: data});
         ReactDOM.render(
