@@ -147,7 +147,7 @@ const Container = React.createClass({
         </Provider>;
     }
 });
-var aws_endpoint = 'https://www.midenquest.info/market';
+var aws_endpoint = 'https://www.midenquest.info/market/';
 
 $.ajax({
     url: aws_endpoint,
