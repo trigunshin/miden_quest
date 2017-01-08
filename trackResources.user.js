@@ -3,7 +3,7 @@
 // @namespace https://github.com/trigunshin/miden_quest
 // @description MQO resource tracker; need to run clearTSResults() to reset tile% after moving
 // @homepage https://trigunshin.github.com/miden_quest
-// @version 22
+// @version 23
 // @downloadURL http://trigunshin.github.io/miden_quest/trackResources.user.js
 // @updateURL http://trigunshin.github.io/miden_quest/trackResources.user.js
 // @include http://midenquest.com/Game.aspx
@@ -32,6 +32,7 @@ var outputItems = true;
 var outputTaxes = true;
 var outputTiers = true;
 var outputQuests = true;
+var outputPerks = true;
 var printItemDrops = true;
 var outputToConsole = false;
 var saveLogText = false;
@@ -104,6 +105,10 @@ var tsResults = {
 		relicDrop: 0,
 		relicTotal: 0,
 		relicDouble: 0
+	},
+	perks: {
+		enraged: 0,
+		drunken: 0
 	}
 };
 function clearTSResults() {
@@ -141,6 +146,10 @@ function clearTSResults() {
 	tsResults.scouts.relicGained = 0;
 	tsResults.scouts.relicDouble = 0;
 	tsResults.scouts.relicDrop = 0;
+	tsResults.perks = {
+		enraged: 0,
+		drunken: 0
+	};
 
 	for(var i=1, iLen=6; i<iLen;i++) {
 		tsResults[i] = {drop: 0, total: 0, gained: 0, taxed: 0};
@@ -237,6 +246,9 @@ function parseScoutResourceRelic(msg) {
 	if(msg.indexOf('double') >= 0) tsResults.scouts.relicDouble += 1;
 	if(msg.indexOf('taxes') >= 0) tsResults.scouts.relicTaxed += 1;
 }
+function logPerk(perk, msg) {
+	tsResults.perks[perk]+= 1;
+}
 function parseTSLog(datum) {
 	var arr = datum.split('|');
 	if (arr[0] != 'NLOG') {return;}
@@ -259,6 +271,9 @@ function parseTSLog(datum) {
 		if(msg.indexOf('gained a new tradeskill level') > -1) return;
 		// scouting's relic gain is in resource log now
 		if(msg.indexOf('relic') > -1) return parseScoutResourceRelic(msg);
+		// handle perks; note the data and return as it is not an extra action
+		if(msg.indexOf('nraged\' Perk') > -1) return logPerk('enraged', msg);
+		if(msg.indexOf('drunkenly') > -1) return logPerk('drunken', msg);
 
 		tsResults.actions += 1;
 		if(tsResults.questActive) tsResults.questActions += 1;
@@ -379,6 +394,18 @@ function addXP(tsResults, outputArgs) {
 		'avg XP:', (tsResults.xp/tsResults.actions).toFixed(2),
 		'&nbsp;', '&nbsp;']);
 }
+function addPerkInfo(tsResults, outputArgs) {
+    let perkInfo = ['&nbsp;', '&nbsp;', 'Perks %', '&nbsp;'];
+
+    const actions = tsResults.actions;
+    const enraged = tsResults.perks.enraged;
+    perkInfo = perkInfo.concat(['enraged: ', (enraged/actions*100).toFixed(2)]);
+    const drunken = tsResults.perks.drunken;
+    perkInfo = perkInfo.concat(['drunken: ', (drunken/actions*100).toFixed(2)]);
+
+    perkInfo.concat(['&nbsp;', '&nbsp;']);
+    return outputArgs.concat(perkInfo);
+}
 function updateOutput(results, msg) {
 	var outputArgs = ['actions:', tsResults.actions, '&nbsp;', '&nbsp;'];
 	outputArgs = addXP(tsResults, outputArgs);
@@ -402,6 +429,8 @@ function updateOutput(results, msg) {
 		else if(scoutsActive) outputArgs = addTaxScouts(tsResults, outputArgs);
 		else outputArgs = addTaxedItems(tsResults, outputArgs);
 	}
+
+	if(outputPerks) outputArgs = addPerkInfo(tsResults, outputArgs);
 
 	outputArgs = outputArgs.concat(['\tmsg:', msg]);
 
