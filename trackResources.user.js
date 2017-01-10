@@ -3,7 +3,7 @@
 // @namespace https://github.com/trigunshin/miden_quest
 // @description MQO resource tracker; need to run clearTSResults() to reset tile% after moving
 // @homepage https://trigunshin.github.com/miden_quest
-// @version 23
+// @version 24
 // @downloadURL http://trigunshin.github.io/miden_quest/trackResources.user.js
 // @updateURL http://trigunshin.github.io/miden_quest/trackResources.user.js
 // @include http://midenquest.com/Game.aspx
@@ -55,11 +55,11 @@ var tsResults = {
 	questActive: false,
 	questActions: 0,
 	questItems: 0,
-	1: {drop: 0, total: 0, gained: 0, taxed: 0},
-	2: {drop: 0, total: 0, gained: 0, taxed: 0},
-	3: {drop: 0, total: 0, gained: 0, taxed: 0},
-	4: {drop: 0, total: 0, gained: 0, taxed: 0},
-	5: {drop: 0, total: 0, gained: 0, taxed: 0},
+    1: {drop: 0, total: 0, gained: 0, taxed: 0},
+    2: {drop: 0, total: 0, gained: 0, taxed: 0},
+    3: {drop: 0, total: 0, gained: 0, taxed: 0},
+    4: {drop: 0, total: 0, gained: 0, taxed: 0},
+    5: {drop: 0, total: 0, gained: 0, taxed: 0},
 	lumber:{
 		items: ['Pine', 'Oak', 'Maple', 'Ironwood', 'Yggdrasil'],
 		tracker: [/(\d+) Pine/, /(\d+) Oak/, /(\d+) Maple/, /(\d+) Ironwood/, /(\d+) Yggdrasil/]
@@ -107,8 +107,26 @@ var tsResults = {
 		relicDouble: 0
 	},
 	perks: {
-		enraged: 0,
-		drunken: 0
+	    enraged: 0,
+        drunken: 0,
+        // drunken is not currently taxed, but keep this form so we can re-use the same function as the main TS
+        1: {drop: 0, total: 0, gained: 0, taxed: 0},
+        2: {drop: 0, total: 0, gained: 0, taxed: 0},
+        3: {drop: 0, total: 0, gained: 0, taxed: 0},
+        4: {drop: 0, total: 0, gained: 0, taxed: 0},
+        5: {drop: 0, total: 0, gained: 0, taxed: 0},
+        sales: {
+            total: 0,
+            taxed: 0,
+            gained: 0,
+            drunken: 0
+        },
+        scouts: {
+            total: 0,
+            taxed: 0,
+            gained: 0,
+            drunken: 0
+        }
 	}
 };
 function clearTSResults() {
@@ -206,31 +224,31 @@ function handleItemDrop(msg) {
 
 	if(msg.indexOf('doubled') > -1) tsResults.itemInfo.relicDouble += 1;
 }
-function parsePrimaryTS(msg, tsResults, tsKey, wasTaxed) {
-	var patterns = tsResults[tsKey].tracker;
-	var itemTypes = tsResults[tsKey].items;
+function parsePrimaryTS(msg, resourceInfo, tierData, tsKey, wasTaxed) {
+	var patterns = resourceInfo[tsKey].tracker;
+	var itemTypes = resourceInfo[tsKey].items;
 	for(var i=0,iLen=itemTypes.length;i<iLen;i++) {
 		if(msg.indexOf(itemTypes[i]) >= 0) {
-			tsResults[i+1].drop += 1;
+			tierData[i+1].drop += 1;
 			// track total/gained/taxed counts
 			var amt = parseInt(msg.match(patterns[i])[1]);
-			tsResults[i+1].total += amt;
-			if(wasTaxed) tsResults[i+1].taxed += amt;
-			else tsResults[i+1].gained += amt;
+			tierData[i+1].total += amt;
+			if(wasTaxed) tierData[i+1].taxed += amt;
+			else tierData[i+1].gained += amt;
 		}
 	}
 }
-function parseSales(msg, tsResults, wasTaxed) {
-	var goldEarned = parseInt(msg.match(tsResults.sales.tracker)[1]);
-	tsResults.sales.total += goldEarned;
-	if(wasTaxed) tsResults.sales.taxed += goldEarned;
-	else tsResults.sales.gained += goldEarned;
+function parseSales(msg, resourceInfo, resourceData, wasTaxed) {
+	var goldEarned = parseInt(msg.match(resourceInfo.sales.tracker)[1]);
+	resourceData.sales.total += goldEarned;
+	if(wasTaxed) resourceData.sales.taxed += goldEarned;
+	else resourceData.sales.gained += goldEarned;
 }
-function parseScouts(msg, tsResults, wasTaxed) {
-	var marksEarned = parseInt(msg.match(tsResults.scouts.tracker)[1]);
-	tsResults.scouts.total += marksEarned;
-	if(wasTaxed) tsResults.scouts.taxed += marksEarned;
-	else tsResults.scouts.gained += marksEarned;
+function parseScouts(msg, resourceInfo, resourceData, wasTaxed) {
+	var marksEarned = parseInt(msg.match(resourceInfo.scouts.tracker)[1]);
+	resourceData.scouts.total += marksEarned;
+	if(wasTaxed) resourceData.scouts.taxed += marksEarned;
+	else resourceData.scouts.gained += marksEarned;
 }
 function parseScoutResourceRelic(msg) {
 	var count = parseInt(msg.match(scoutRelicRegex)[1]);
@@ -248,6 +266,20 @@ function parseScoutResourceRelic(msg) {
 }
 function logPerk(perk, msg) {
 	tsResults.perks[perk]+= 1;
+	if(perk === 'drunken') {
+        if(msg.indexOf('sold') >= 0) {
+            tsResults.perks.sales.drunken += 1;
+            parseSales(msg, tsResults, tsResults.perks, false);
+        }
+        else if(msg.indexOf('scouted') >= 0) {
+            tsResults.perks.scouts.drunken += 1;
+            parseScouts(msg, tsResults, tsResults.perks, false);
+        }
+        else if(msg.indexOf('mined') >= 0) {parsePrimaryTS(msg, tsResults, tsResults.perks, 'ore', false);}
+        else if(msg.indexOf('gathered') >= 0) {parsePrimaryTS(msg, tsResults, tsResults.perks, 'plant', false);}
+        else if(msg.indexOf('fished') >= 0) {parsePrimaryTS(msg, tsResults, tsResults.perks, 'fish', false);}
+        else if(msg.indexOf('cut') >= 0) {parsePrimaryTS(msg, tsResults, tsResults.perks, 'lumber', false);}
+    }
 }
 function parseTSLog(datum) {
 	var arr = datum.split('|');
@@ -283,18 +315,18 @@ function parseTSLog(datum) {
 		tsResults.xp += parseInt(msg.match(tsXPRegex)[1]);
 
 		if(msg.indexOf('You cut') >= 0) {
-			parsePrimaryTS(msg, tsResults, 'lumber', wasTaxed);
+			parsePrimaryTS(msg, tsResults, tsResults, 'lumber', wasTaxed);
 		} else if(msg.indexOf('You mined') >= 0) {
-			parsePrimaryTS(msg, tsResults, 'ore', wasTaxed);
+			parsePrimaryTS(msg, tsResults, tsResults, 'ore', wasTaxed);
 		} else if(msg.indexOf('You gathered') >= 0) {
-			parsePrimaryTS(msg, tsResults, 'plant', wasTaxed);
+			parsePrimaryTS(msg, tsResults, tsResults, 'plant', wasTaxed);
 		} else if(msg.indexOf('You caught') >= 0) {
-			parsePrimaryTS(msg, tsResults, 'fish', wasTaxed);
+			parsePrimaryTS(msg, tsResults, tsResults, 'fish', wasTaxed);
 		} else if(msg.indexOf('You earned') >= 0) {
-			parseSales(msg, tsResults, wasTaxed);
+			parseSales(msg, tsResults, tsResults, wasTaxed);
 		} else if(msg.indexOf('You scouted') >= 0) {
 			// skip the "didn't find any" message
-			if(msg.indexOf('find any') < 0) parseScouts(msg, tsResults, wasTaxed);
+			if(msg.indexOf('find any') < 0) parseScouts(msg, tsResults, tsResults, wasTaxed);
 		}
 
 		updateOutput(tsResults, msg);
@@ -398,10 +430,21 @@ function addPerkInfo(tsResults, outputArgs) {
     let perkInfo = ['&nbsp;', '&nbsp;', 'Perks %', '&nbsp;'];
 
     const actions = tsResults.actions;
-    const enraged = tsResults.perks.enraged;
+    const perks = tsResults.perks;
+    const enraged = perks.enraged;
     perkInfo = perkInfo.concat(['enraged: ', (enraged/actions*100).toFixed(2)]);
-    const drunken = tsResults.perks.drunken;
+    const drunken = perks.drunken;
     perkInfo = perkInfo.concat(['drunken: ', (drunken/actions*100).toFixed(2)]);
+
+    perkInfo = perkInfo.concat(['t1: ', (perks[1].total).toFixed(2)]);
+    perkInfo = perkInfo.concat(['t2: ', (perks[2].total).toFixed(2)]);
+    perkInfo = perkInfo.concat(['t3: ', (perks[3].total).toFixed(2)]);
+    perkInfo = perkInfo.concat(['t4: ', (perks[4].total).toFixed(2)]);
+    perkInfo = perkInfo.concat(['t5: ', (perks[5].total).toFixed(2)]);
+    perkInfo = perkInfo.concat(['gold: ', (perks.sales.total).toFixed(2)]);
+    perkInfo = perkInfo.concat(['avg gold: ', (perks.sales.total/perks.sales.drunken).toFixed(2)]);
+    perkInfo = perkInfo.concat(['scouted: ', (perks.scouts.total).toFixed(2)]);
+    perkInfo = perkInfo.concat(['avg scout: ', (perks.scouts.total/perks.scouts.drunken).toFixed(2)]);
 
     perkInfo.concat(['&nbsp;', '&nbsp;']);
     return outputArgs.concat(perkInfo);
