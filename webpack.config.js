@@ -5,7 +5,7 @@ module.exports = {
 	entry: {
 		'app': ['./static/js/app.jsx'],
 		'searchBox': ['./searchBox.user'],
-        'expeditionHelper': ['./userScripts/expeditionLoader.user']
+        'inventory': ['./src/inventory.jsx']
 	},
   output: { path: __dirname+'/build', filename: '[name].js' },
   module: {
@@ -15,7 +15,8 @@ module.exports = {
         loader: 'babel-loader',
         exclude: /node_modules/,
         query: {
-          presets: ['es2015', 'react']
+            plugins: ["transform-decorators-legacy"],
+          presets: ['es2015', 'react', 'stage-1']
         }
       },
         {
