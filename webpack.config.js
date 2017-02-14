@@ -4,9 +4,10 @@ var webpack = require('webpack');
 module.exports = {
 	entry: {
 		'app': ['./static/js/app.jsx'],
-		'searchBox': ['./searchBox.user']
+		'searchBox': ['./searchBox.user'],
+        'expeditionHelper': ['./userScripts/expeditionLoader.user']
 	},
-  output: { path: __dirname, filename: '[name].js' },
+  output: { path: __dirname+'/build', filename: '[name].js' },
   module: {
     loaders: [
       {
