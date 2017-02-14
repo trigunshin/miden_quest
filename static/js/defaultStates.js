@@ -296,7 +296,7 @@ export const tierFactors = {t0: 1, 't1': Math.pow(.67, 0), 't2': Math.pow(.67, 1
 export const tiersXp = {t0: 1, t1: 2, t2: 3, t3: 4, t4: 5, t5: 7};
 export const salesAmountFactor = 1+(1000/100);
 export const tsAmountFactors = {
-    selling: {t1: 2*salesAmountFactor, t2: 7*salesAmountFactor, t3: 18*salesAmountFactor, t4: 45*salesAmountFactor, t5: 100*salesAmountFactor},
+    selling: {t1: 3*salesAmountFactor, t2: 10*salesAmountFactor, t3: 27*salesAmountFactor, t4: 67*salesAmountFactor, t5: 150*salesAmountFactor},
     scouting: {t1: 1, t2: 2, t3: 4, t4: 6, t5: 10}
 };
 export const tradeskillNames = ['Selling', 'Gathering', 'Mining', 'Fishing', 'Woodcutting', 'Scouting'];
