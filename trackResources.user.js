@@ -3,7 +3,7 @@
 // @namespace https://github.com/trigunshin/miden_quest
 // @description MQO resource tracker; need to run clearTSResults() to reset tile% after moving
 // @homepage https://trigunshin.github.com/miden_quest
-// @version 24
+// @version 26
 // @downloadURL http://trigunshin.github.io/miden_quest/trackResources.user.js
 // @updateURL http://trigunshin.github.io/miden_quest/trackResources.user.js
 // @include http://midenquest.com/Game.aspx
@@ -108,6 +108,7 @@ var tsResults = {
 	},
 	perks: {
 	    enraged: 0,
+		hoarder: 0,
         drunken: 0,
         // drunken is not currently taxed, but keep this form so we can re-use the same function as the main TS
         1: {drop: 0, total: 0, gained: 0, taxed: 0},
@@ -166,6 +167,7 @@ function clearTSResults() {
 	tsResults.scouts.relicDrop = 0;
 	tsResults.perks = {
 		enraged: 0,
+		hoarder: 0,
 		drunken: 0
 	};
 
@@ -220,7 +222,7 @@ function handleItemDrop(msg) {
 		var count = parseInt(msg.match(itemDropCountRegex)[1]);
 		tsResults.itemInfo.magicElementsDrop += 1;
 		tsResults.itemInfo.magicElementsTotal += count;
-	}
+	}  else if(msg.indexOf('keys') >= 0) tsResults.itemInfo.keyDrop += 1;
 
 	if(msg.indexOf('doubled') > -1) tsResults.itemInfo.relicDouble += 1;
 }
@@ -306,6 +308,7 @@ function parseTSLog(datum) {
 		// handle perks; note the data and return as it is not an extra action
 		if(msg.indexOf('nraged\' Perk') > -1) return logPerk('enraged', msg);
 		if(msg.indexOf('drunkenly') > -1) return logPerk('drunken', msg);
+		if(msg.indexOf('Hoarder') > -1) return logPerk('hoarder', msg);
 
 		tsResults.actions += 1;
 		if(tsResults.questActive) tsResults.questActions += 1;
@@ -433,6 +436,8 @@ function addPerkInfo(tsResults, outputArgs) {
     const perks = tsResults.perks;
     const enraged = perks.enraged;
     perkInfo = perkInfo.concat(['enraged: ', (enraged/actions*100).toFixed(2)]);
+    const hoarder= perks.hoarder;
+    perkInfo = perkInfo.concat(['hoarder: ', (hoarder/actions*100).toFixed(2)]);
     const drunken = perks.drunken;
     perkInfo = perkInfo.concat(['drunken: ', (drunken/actions*100).toFixed(2)]);
 
