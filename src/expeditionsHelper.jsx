@@ -27,11 +27,6 @@ class HelperContainer extends React.Component {
             <Toggle label="[-]">
                 <fieldset>
                     <div className="controlgroup-vertical">
-                        <Toggle label="Search">
-                            <SearchContainer />
-                            {getBulkSellAnchor()}
-                        </Toggle>
-                        <br />
                         <Toggle label="Expo's">{expeditionState && <ExpeditionContainer expeditionState={this.props.expeditionState} />}</Toggle>
                     </div>
                 </fieldset>
