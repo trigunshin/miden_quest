@@ -202,7 +202,7 @@ export const ChartPane = React.createClass({
                 </div>
                 <div>
                     <LocalChart resData={resData} columnLabels={resources} rowData={_.map(resData, getTradeComparison)}
-                    title="Tier Price * TierAmountFactor"/>
+                    title="sum(Tier Price * TierAmountFactor)"/>
                 </div>
                 {resData && _.map(resources, (resource) => {
                     return <ResourceTierChart key={resource} resData={resData} resource={resource} tiers={tiers} />
