@@ -27,7 +27,7 @@ function getTradeComparison(resDatum) {
     return [ts].concat(avgValues);
 }
 
-const LocalChart = ({resData, columnLabels, rowData}) => {
+const LocalChart = ({resData, columnLabels, rowData, title}) => {
     // default options
     const chartOptions = {
         "options":{
@@ -38,19 +38,19 @@ const LocalChart = ({resData, columnLabels, rowData}) => {
         "width":"100%",
         "chartType":"LineChart"
     };
+    if(title) chartOptions.options.title = title;
 
     // set up time column & the 5x tier columns
     const tsCol = {"label":"time","type":"datetime","p":{}};
     const cols = [tsCol].concat(_.map(columnLabels, (label) => {
         return {label,"type":"number","p":{}};
     }));
-    console.info(cols, rowData);
     chartOptions.rows = rowData;
     chartOptions.columns = cols;
     return <Chart {...chartOptions} />;
 };
 
-const DualAxisChart = ({resData}) => {
+const DualAxisChart = ({resData, title}) => {
     // default options
     const chartOptions = {
         "options":{
@@ -70,6 +70,7 @@ const DualAxisChart = ({resData}) => {
         "width":"100%",
         "chartType":"LineChart"
     };
+    if(title) chartOptions.options.title = title;
     const items = ['gem', 'relic'];
     // set up time column, etc
     let cols = [{"label":"time","type":"datetime","p":{}}];
@@ -82,7 +83,7 @@ const DualAxisChart = ({resData}) => {
     return <Chart {...chartOptions} />;
 };
 
-const ResourceTierChart = ({resData, resource, tiers}) => {
+const ResourceTierChart = ({resData, resource, tiers, title}) => {
     // default options
     const chartOptions = {
         "options":{
@@ -93,6 +94,7 @@ const ResourceTierChart = ({resData, resource, tiers}) => {
         "width":"100%",
         "chartType":"LineChart"
     };
+    if(title) chartOptions.options.title = title;
 
     // set up time column & the 5x tier columns
     let cols = [{"label":"time","type":"datetime","p":{}}];
@@ -116,7 +118,7 @@ const ResourceTierChart = ({resData, resource, tiers}) => {
     return <Chart {...chartOptions} />;
 };
 
-const ItemChart = ({resData, items}) => {
+const ItemChart = ({resData, items, title}) => {
     // default options
     const chartOptions = {
         "options":{
@@ -127,6 +129,7 @@ const ItemChart = ({resData, items}) => {
         "width":"100%",
         "chartType":"LineChart"
     };
+    if(title) chartOptions.options.title = title;
 
     // set up time column & the 5x tier columns
     let cols = [{"label":"time","type":"datetime","p":{}}];
@@ -191,9 +194,16 @@ export const ChartPane = React.createClass({
  */
         return (
             <div>
-                <DualAxisChart resData={resData} />
-                <ItemChart resData={resData} items={['orb', 'scroll']} />
-                <LocalChart resData={resData} columnLabels={resources} rowData={_.map(resData, getTradeComparison)} />
+                <div>
+                    <DualAxisChart resData={resData} title="Gem & Relic"/>
+                </div>
+                <div>
+                    <ItemChart resData={resData} items={['orb', 'scroll']} title="Orb & Scroll" />
+                </div>
+                <div>
+                    <LocalChart resData={resData} columnLabels={resources} rowData={_.map(resData, getTradeComparison)}
+                    title="Tier Price * TierAmountFactor"/>
+                </div>
                 {resData && _.map(resources, (resource) => {
                     return <ResourceTierChart key={resource} resData={resData} resource={resource} tiers={tiers} />
                 })}
