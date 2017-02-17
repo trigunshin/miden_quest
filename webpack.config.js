@@ -5,7 +5,8 @@ module.exports = {
 	entry: {
 		'app': ['./static/js/app.jsx'],
 		'searchBox': ['./searchBox.user'],
-        'inventory': ['./src/inventory.jsx']
+        'inventory': ['./src/inventory.jsx'],
+        'expeditions': ['./src/expeditionsHelper.jsx']
 	},
   output: { path: __dirname+'/build', filename: '[name].js' },
   module: {
