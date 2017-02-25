@@ -9,10 +9,12 @@ import {parseItemData, SearchContainer} from './searchBox.jsx';
 import {parseCurrentItem, CraftingContainer} from './crafting.jsx';
 import {getBulkSellAnchor} from './selling.jsx';
 import {LinkContainer} from './quick_links.jsx';
-import ExpeditionState from './parts/expeditions/expeditionParser.jsx';
-import ExpeditionContainer from './parts/expeditions/expeditions.jsx';
+import ROIState from './components/tradeskillParser';
+import ExpeditionState from './components/expeditions/expeditionParser.jsx';
+import ExpeditionContainer from './components/expeditions/expeditions.jsx';
+import KingdomContainer from './components/kingdom.jsx';
 // jquery & UI: comes on the MQO page
-
+const roiState = new ROIState();
 const expeditionState = new ExpeditionState();
 
 class Toggle extends React.Component {
@@ -54,6 +56,8 @@ class InventoryContainer extends React.Component {
                         <br />
                         <Toggle label="Expeditions">{expeditionState && <ExpeditionContainer expeditionState={this.props.expeditionState} />}</Toggle>
                         <br />
+                        <Toggle label="Kingdom"><KingdomContainer /></Toggle>
+                        <br />
                         <Toggle label="Links"><LinkContainer /></Toggle>
                     </div>
                 </fieldset>
@@ -92,6 +96,11 @@ function track_inventory_onmsg(evt) {
     if(expeditionState) {
         ExpeditionState.parseExpeditionSetup(evt.data, expeditionState);
         expeditionState.currentTime = moment();
+    }
+
+    if(roiState) {
+        ROIState.parse(evt.data, roiState);
+        roiState.currentTime = moment();
     }
 }
 // set up handler & hook original game handler in

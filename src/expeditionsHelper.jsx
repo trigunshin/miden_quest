@@ -8,9 +8,9 @@ import {observer} from "mobx-react";
 import {parseItemData, SearchContainer} from './searchBox.jsx';
 import {parseCurrentItem} from './crafting.jsx';
 import {getBulkSellAnchor} from './selling.jsx';
-import Toggle from './parts/toggle.jsx';
-import ExpeditionState from './parts/expeditions/expeditionParser.jsx';
-import ExpeditionContainer from './parts/expeditions/expeditions.jsx';
+import Toggle from './components/toggle.jsx';
+import ExpeditionState from './components/expeditions/expeditionParser.jsx';
+import ExpeditionContainer from './components/expeditions/expeditions.jsx';
 // jquery & UI: comes on the MQO page
 
 const expeditionState = new ExpeditionState();
