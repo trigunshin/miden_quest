@@ -4,9 +4,11 @@ var webpack = require('webpack');
 module.exports = {
 	entry: {
 		'app': ['./static/js/app.jsx'],
-		'searchBox': ['./searchBox.user']
+		'searchBox': ['./searchBox.user'],
+        'inventory': ['./src/inventory.jsx'],
+        'expeditions': ['./src/expeditionsHelper.jsx']
 	},
-  output: { path: __dirname, filename: '[name].js' },
+  output: { path: __dirname+'/build', filename: '[name].js' },
   module: {
     loaders: [
       {
@@ -14,7 +16,8 @@ module.exports = {
         loader: 'babel-loader',
         exclude: /node_modules/,
         query: {
-          presets: ['es2015', 'react']
+            plugins: ["transform-decorators-legacy"],
+          presets: ['es2015', 'react', 'stage-1']
         }
       },
         {

@@ -3,15 +3,16 @@
 // @namespace https://github.com/trigunshin/miden_quest
 // @description MQO market overview parser. Sends data to server.
 // @homepage https://trigunshin.github.com/miden_quest
-// @version 2
-// @downloadURL http://trigunshin.github.io/miden_quest/userScripts/parseProfile.user.js
-// @updateURL http://trigunshin.github.io/miden_quest/userScripts/parseProfile.user.js
+// @version 6
+// @downloadURL http://trigunshin.github.io/miden_quest/userScripts/parseMarketOverview.user.js
+// @updateURL http://trigunshin.github.io/miden_quest/userScripts/parseMarketOverview.user.js
 // @include http://midenquest.com/Game.aspx
 // @include http://www.midenquest.com/Game.aspx
 // @include https://www.midenquest.com/Game.aspx
 // @grant GM_log
 // ==/UserScript==
 var resource_data_ids = {
+	'shard': '8',
 	'orb': '6',
 	'scroll': '7',
 	'me': '3',
@@ -23,10 +24,10 @@ var resource_data_ids = {
 	'ore': '1'
 };
 var resource_id_prefix = 'div#ShortcutRes';
-var simple_keys = ['orb', 'scroll', 'me', 'relic', 'gem'];
+var simple_keys = ['orb', 'scroll', 'me', 'relic', 'gem', 'shard'];
 var deep_keys = ['wood', 'fish', 'plant', 'ore'];
 var tiers = ['1','2','3','4','5'];
-var aws_endpoint = 'http://midenquest.info/market/';
+var aws_endpoint = 'https://miden-quest.herokuapp.com/market/';
 
 function sendDataUpdate(data) {
 	$.ajax({

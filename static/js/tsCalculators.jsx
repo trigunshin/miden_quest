@@ -8,7 +8,7 @@ function getTierXp(tier, tiersXp, state) {
     let relic = parseFloat(_.get(state, 'ts.xp.relic', 0));
     let gem = parseInt(_.get(state, 'ts.xp.gem', 0))/100;
     let level = parseInt(_.get(state, 'ts.level', 1));
-    return relic + (1 + level/45 + gem) * tiersXp[tier] * bonus;
+    return relic + (1 + level*1.485/45 + gem) * tiersXp[tier] * bonus;
 }
 function getActionXp(tiers, tiersXp, tierChanceFn, state) {
     const tiersDescending = _.reverse(_.slice(tiers)).concat('t0');
@@ -46,7 +46,7 @@ function getTSChance(tsPrefix, tier, state) {
 }
 function _getTierOutput(tsLevel, relicRes, workEff, kingdomBonus, gemBonus, globalBonus, amountFactor, tierFactor) {
     // amountFactor * (Level + Efficiency + Relics) * Kingdom * Gem * Global
-    let ret = ((1+tsLevel/100*tierFactor) + (workEff+relicRes)/100*tierFactor) * (1+kingdomBonus/100) * (1+gemBonus/100) * globalBonus * amountFactor;
+    let ret = ((1+tsLevel*2/100*tierFactor) + (workEff+relicRes)/100*tierFactor) * (1+kingdomBonus/100) * (1+gemBonus/100) * globalBonus * amountFactor;
     return ret.toFixed(2);
 }
 function _getTierOutputArgs(tsPrefix, tier, state) {

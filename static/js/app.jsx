@@ -17,6 +17,7 @@ import {getBuildingCalculators} from './buildings.jsx';
 import {getCraftingCalculators} from './craftingCalculator.jsx';
 import {getKingdomCalculators} from './kingdom.jsx';
 import {getStore} from './reducers.jsx';
+import {ChartPane} from './charts/main.jsx';
 
 const tsCalculators = getTradeskillCalculators(defaultState);
 const resourceCalculators = getResourceCalculators(defaultState);
@@ -110,6 +111,9 @@ const Container = React.createClass({
     setCraftingTab() {
         this.setState({currentTab: 'crafting'});
     },
+    setChartTab() {
+        this.setState({currentTab: 'res_chart'});
+    },
     render() {
         const currentTab = this.state.currentTab;
         let toRender;
@@ -126,6 +130,8 @@ const Container = React.createClass({
             toRender = <Expeditions expeditionCalculators={expeditionCalculators} />;
         else if(this.state.currentTab == 'ts')
             toRender = <Tradeskills />;
+        else if(this.state.currentTab == 'res_chart')
+            toRender = <ChartPane />;
         else
             toRender = _.map(_.values(miscCalculators), (config, key) => {
                 return <StatefulCalculator {...config} key={key} />
@@ -140,6 +146,7 @@ const Container = React.createClass({
                         <li role="presentation" className={currentTab=='kingdom' ? "active" : ''} onClick={this.setKingdomTab}><a href="#" key={'kingdom_pane'}>Kingdom</a></li>
                         <li role="presentation" className={currentTab=='crafting' ? "active" : ''} onClick={this.setCraftingTab}><a href="#" key={'crafting_pane'}>Crafting</a></li>
                         <li role="presentation" className={currentTab=='misc' ? "active" : ''} onClick={this.setMiscTab}><a href="#" key={'misc_pane'}>Misc</a></li>
+                        <li role="presentation" className={currentTab=='res_chart' ? "active" : ''} onClick={this.setChartTab}><a href="#" key={'misc_pane'}>Resource Chart</a></li>
                     </ul>
                 </div>
                 {toRender}
@@ -147,12 +154,13 @@ const Container = React.createClass({
         </Provider>;
     }
 });
-var aws_endpoint = 'https://midenquest.info/market';
+var aws_endpoint = 'https://miden-quest.herokuapp.com/market/';
 
 $.ajax({
     url: aws_endpoint,
     type: 'GET',
-    contentType: 'application/json; charset=utf-8',
+    //accepts: 'application/json; charset=utf-8',
+    //contentType: 'application/json; charset=utf-8',
     success: (data)=>{
         initializedStore = getStore(costCalculators, {resources: data});
         ReactDOM.render(
