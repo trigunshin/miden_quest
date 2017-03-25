@@ -36,14 +36,15 @@ const marketLinkData = [
 
 const linkData = [
     {url: 'getExpedition.aspx?null=', label: 'Inn'},
-    {url: 'getNavigation.aspx?screen=2&gambling=1&null=', label: 'Gamble'},
 	{url: 'getInfoPerk.aspx?null=', label: 'Perks'},
+	{url: 'getMarket.aspx?SelectMarketType=-2', label: 'Market Log'},
 	{url: compiledSimpleURLTemplate({type: 4}), label: 'Relics'},
     {url: compiledSimpleURLTemplate({type: 5}), label: 'Gems'},
 	{url: compiledSimpleURLTemplate({type: 6}), label: 'Orbs'},
+	{url: compiledSimpleURLTemplate({type: 8}), label: 'Shards'},
     {url: 'getKingdom.aspx?null=', label: 'Kingdom'},
+	{url: 'getNavigation.aspx?screen=2&gambling=1&null=', label: 'Gamble'},
     {url: 'getMap.aspx?null=', label: 'Map'},
-    {url: 'getShop.aspx?null=', label: 'Shop'},
     {url: compiledSimpleURLTemplate({type: 3}), label: 'M. Elements'},
 ];
 

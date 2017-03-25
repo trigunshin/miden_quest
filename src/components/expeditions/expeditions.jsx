@@ -74,7 +74,7 @@ class ExpeditionContainer extends React.Component {
             <div>
                 {_.map(expState.expeditionColumns, (name) => {
                     return (
-                        <div key={name}>{name}: {expState[name]} />
+                        <div key={name}>{name}: {expState[name]}
                             <input id={name+"Target"} type='number' value={targets[name]} style={inputStyle} onChange={_.partial(this.onTargetChange, name)} />
                             <Select onChange={_.partial(this.onResourceChange, name)} names={_.keys(expState.expeditionResourceTypes)} value={this.state.resources[name]} />
                         </div>

@@ -44,6 +44,7 @@ class InventoryContainer extends React.Component {
         this.state = {};
     }
     render() {
+        //const expeditions = <Toggle label="Expeditions">{expeditionState && <ExpeditionContainer expeditionState={this.props.expeditionState} />}</Toggle>;
         return (<div className='widget'>
             <Toggle label="[-]">
                 <fieldset>
@@ -53,8 +54,6 @@ class InventoryContainer extends React.Component {
                                 {getBulkSellAnchor()}
                             <CraftingContainer />
                         </Toggle>
-                        <br />
-                        <Toggle label="Expeditions">{expeditionState && <ExpeditionContainer expeditionState={this.props.expeditionState} />}</Toggle>
                         <br />
                         <Toggle label="Kingdom"><KingdomContainer /></Toggle>
                         <br />
