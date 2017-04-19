@@ -27,14 +27,11 @@ function parseTSBonus(dataArray, state) {
     //state.ts_relic_luck = dataArray[tsBonusOffsets.luck];
     state.ts_relic_luck_cost = dataArray[tsBonusOffsets.luck+5];
 
-    console.debug('updated state', state.relic_xp, state.relic_res, state.relic_wl, state.relic_drop, state.relic_luck, state);
-
     return state;
 }
 
 function parseTSLvl(dataArray, state) {
     state.ts_level = parseInt(dataArray[3]);
-    console.debug('updated state', state.relic_xp, state.relic_res, state.relic_wl, state.relic_drop, state.relic_luck, state);
     return state;
 }
 
