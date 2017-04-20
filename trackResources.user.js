@@ -3,7 +3,7 @@
 // @namespace https://github.com/trigunshin/miden_quest
 // @description MQO resource tracker; need to run clearTSResults() to reset tile% after moving
 // @homepage https://trigunshin.github.com/miden_quest
-// @version 26
+// @version 27
 // @downloadURL http://trigunshin.github.io/miden_quest/trackResources.user.js
 // @updateURL http://trigunshin.github.io/miden_quest/trackResources.user.js
 // @include http://midenquest.com/Game.aspx
@@ -306,7 +306,7 @@ function parseTSLog(datum) {
 		// scouting's relic gain is in resource log now
 		if(msg.indexOf('relic') > -1) return parseScoutResourceRelic(msg);
 		// handle perks; note the data and return as it is not an extra action
-		if(msg.indexOf('nraged\' Perk') > -1) return logPerk('enraged', msg);
+		if(msg.indexOf('nraged\' Perk') > -1) logPerk('enraged', msg);
 		if(msg.indexOf('drunkenly') > -1) return logPerk('drunken', msg);
 		if(msg.indexOf('Hoarder') > -1) return logPerk('hoarder', msg);
 
