@@ -12,8 +12,10 @@ import {LinkContainer} from './quick_links.jsx';
 import ROIState from './components/tradeskillParser';
 import ExpeditionState from './components/expeditions/expeditionParser.jsx';
 import ExpeditionContainer from './components/expeditions/expeditions.jsx';
-import KingdomContainer from './components/kingdom.jsx';
+import KingdomContainer from './components/kingdom/kingdom.jsx';
+import KingdomState from './components/kingdom/kingdomParser.jsx';
 // jquery & UI: comes on the MQO page
+const kingdomState = new KingdomState();
 const roiState = new ROIState();
 const expeditionState = new ExpeditionState();
 
@@ -95,6 +97,11 @@ function track_inventory_onmsg(evt) {
     if(expeditionState) {
         ExpeditionState.parseExpeditionSetup(evt.data, expeditionState);
         expeditionState.currentTime = moment();
+    }
+
+    if(kingdomState) {
+        KingdomState.parseKingdom(evt.data, kingdomState);
+        kingdomState.currentTime = moment();
     }
 
     if(roiState) {
