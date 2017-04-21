@@ -3,7 +3,7 @@
 // @namespace https://github.com/trigunshin/miden_quest
 // @description MQO resource tracker; need to run clearTSResults() to reset tile% after moving
 // @homepage https://trigunshin.github.com/miden_quest
-// @version 27
+// @version 28
 // @downloadURL http://trigunshin.github.io/miden_quest/trackResources.user.js
 // @updateURL http://trigunshin.github.io/miden_quest/trackResources.user.js
 // @include http://midenquest.com/Game.aspx
@@ -55,6 +55,15 @@ var tsResults = {
 	questActive: false,
 	questActions: 0,
 	questItems: 0,
+    keyInfo: {
+		// total key drops are tracked under tsResults.iteminfo.keyDrop
+		pendingKeys: 0,
+		currentKeys: 0,
+		single: 0,
+		double: 0,
+		triple: 0,
+		init: false
+    },
     1: {drop: 0, total: 0, gained: 0, taxed: 0},
     2: {drop: 0, total: 0, gained: 0, taxed: 0},
     3: {drop: 0, total: 0, gained: 0, taxed: 0},
@@ -151,6 +160,14 @@ function clearTSResults() {
 		relicTotal: 0,
 		relicDouble: 0
 	};
+	tsResults.keyInfo = {
+		pendingKeys: 0,
+		currentKeys: 0,
+		single: 0,
+		double: 0,
+		triple: 0,
+		init: false
+    };
 	tsResults.xp = 0;
 
 	tsResults.sales.total = 0;
@@ -197,7 +214,6 @@ function handleItemDrop(msg) {
 	if(msg.indexOf('a resource bag') >= 0) tsResults.itemInfo.resourceBagDrop += 1;
 	else if(msg.indexOf('resource bags') >= 0) tsResults.itemInfo.resourceBagDrop += 1;
 	else if(msg.indexOf('resources bag') >= 0) tsResults.itemInfo.resourceBagDrop += 1;
-	else if(msg.indexOf('a key') >= 0) tsResults.itemInfo.keyDrop += 1;
 	else if(msg.indexOf('a gem') >= 0) tsResults.itemInfo.gemDrop += 1;
 
 	// these will eventually be broken out by tier as well
@@ -206,7 +222,40 @@ function handleItemDrop(msg) {
 	else if(msg.indexOf('Found Fine') >= 0) tsResults.itemInfo.equipDrop += 1;
 	else if(msg.indexOf('Found Elite') >= 0) tsResults.itemInfo.equipDrop += 1;
 	else if(msg.indexOf('Found Master') >= 0) tsResults.itemInfo.equipDrop += 1;
-	// equips else if(msg.indexOf('a key') >= 0) tsResults.itemInfo.keyDrop += 1;
+	else if(msg.indexOf('key') >= 0) {
+		/*
+		Important timing note: SETKEYS| occurs *before* NLOG|3| updates with the itemlog message
+
+		SETKEYS can be called for many reasons; this uses the last value to estimate whether the last SETKEYS
+		    was due to an item drop, as opposed to expo/purchase/naval/????.
+		The mechanism for this is:
+			setkeys overwrites this value whenever called
+				N - currentKeys = # added (only update if 1-3 keys)
+				if >3 keys or 0 keys, set to 0 keys
+			itemlog .indexof('key') >0 means itemlog found a key
+				so use the pendingKeys value to increment currentKeys as well as single|double|triple
+
+		This could be misleading if we get a sequence like:
+			SETKEYS|3 // from itemlog's drop%
+			SETKEYS|2 // from expeditions
+			NSLOG|You found a key // itemlog drop notification which sees a 2 instead of a 3
+
+		however this sequence seems unlikely due to expedition/purchase timing
+
+		//*/
+		tsResults.itemInfo.keyDrop += 1;
+		switch (tsResults.keyInfo.pendingKeys) {
+			case 1:
+				tsResults.keyInfo.single++;
+				break;
+			case 2:
+				tsResults.keyInfo.double++;
+				break;
+			case 3:
+				tsResults.keyInfo.triple++;
+				break;
+		}
+    }
 	else if(msg.indexOf('a relic') >= 0) {
 		tsResults.itemInfo.relicDrop += 1;
 		tsResults.itemInfo.relicTotal += 1;
@@ -222,9 +271,13 @@ function handleItemDrop(msg) {
 		var count = parseInt(msg.match(itemDropCountRegex)[1]);
 		tsResults.itemInfo.magicElementsDrop += 1;
 		tsResults.itemInfo.magicElementsTotal += count;
-	}  else if(msg.indexOf('keys') >= 0) tsResults.itemInfo.keyDrop += 1;
+	}
 
 	if(msg.indexOf('doubled') > -1) tsResults.itemInfo.relicDouble += 1;
+
+	// if an item drop occurred (key or otherwise) zero this out as we've already handled or ignored it
+	// handle this outside the if(key) block as this value can be set by any SETKEYS packet and we want to keep it clean
+	tsResults.keyInfo.pendingKeys = 0;
 }
 function parsePrimaryTS(msg, resourceInfo, tierData, tsKey, wasTaxed) {
 	var patterns = resourceInfo[tsKey].tracker;
@@ -283,8 +336,54 @@ function logPerk(perk, msg) {
         else if(msg.indexOf('cut') >= 0) {parsePrimaryTS(msg, tsResults, tsResults.perks, 'lumber', false);}
     }
 }
+function handleSetKey(count) {
+	count = parseInt(count, 10);
+	const addedKeys = count - tsResults.keyInfo.currentKeys;
+	tsResults.keyInfo.currentKeys = count;
+	/*
+	if keyInfo.init is false, we haven't initialized the value; set it & don't count as a real drop
+	if count is 0, we just opened all keys; reset local count to that value
+	if count is 1-3, increment local value & track the type of key drop
+
+	handleItemDrop's key section will actually update the type of key drop if necessary
+	 */
+	if (tsResults.keyInfo.init === false) {
+		//console.info('healthy init');
+		// first setkeys called, which 'should' mean the game is loading
+		// this also means we can skip the pending values
+		tsResults.keyInfo.currentKeys = count;
+		tsResults.keyInfo.pendingKeys = 0;
+		tsResults.keyInfo.init = true;
+	} else if (addedKeys <= 0) {
+		// received after opening all keys with OPENALL|1
+		//console.info('key reset triggered by OPENALL|1', tsResults.keyInfo);
+	}  else if (addedKeys === 1) {
+		//console.info('+1 added keys', count, addedKeys, tsResults.keyInfo);
+		tsResults.keyInfo.pendingKeys = addedKeys;
+	} else if (addedKeys === 2) {
+		//console.info('+2 added keys', count, addedKeys, tsResults.keyInfo);
+		tsResults.keyInfo.pendingKeys = addedKeys;
+	} else if (addedKeys === 3) {
+		//console.info('+3 added keys', count, addedKeys, tsResults.keyInfo);
+		tsResults.keyInfo.pendingKeys = addedKeys;
+	} else {
+		//console.info('+? added keys', count, addedKeys, tsResults.keyInfo);
+	}
+}
 function parseTSLog(datum) {
 	var arr = datum.split('|');
+	// SETKEY|1
+	// and then
+	// NLOG|3|[11:13:07] Found a key
+
+	if (arr[0] === 'OPENALL') {
+		tsResults.keyInfo.currentKeys = 0;
+		tsResults.keyInfo.initialized = true;
+		return;
+    }
+	if (arr[0] === 'SETKEY') {
+		return handleSetKey(arr[1]);
+	}
 	if (arr[0] != 'NLOG') {return;}
 
 	var channel = arr[1];
@@ -429,6 +528,23 @@ function addXP(tsResults, outputArgs) {
 		'avg XP:', (tsResults.xp/tsResults.actions).toFixed(2),
 		'&nbsp;', '&nbsp;']);
 }
+function addKeyInfo(tsResults, outputArgs) {
+	let keyInfo = [];
+
+	const keyDrops = tsResults.itemInfo.keyDrop;
+	//const keysNow = tsResults.keyInfo.currentKeys;
+	const singleKey = tsResults.keyInfo.single;
+	const doubleKey = tsResults.keyInfo.double;
+	const tripleKey = tsResults.keyInfo.triple;
+
+	keyInfo = keyInfo.concat(['Glvl Keys', '&nbsp;']);
+	keyInfo = keyInfo.concat(['1x %: ', (100*singleKey/keyDrops||0).toFixed(2)]);
+	keyInfo = keyInfo.concat(['2x %: ', (100*doubleKey/keyDrops||0).toFixed(2)]);
+	keyInfo = keyInfo.concat(['3x %: ', (100*tripleKey/keyDrops||0).toFixed(2)]);
+	keyInfo = keyInfo.concat(['&nbsp;', '&nbsp;']);
+
+	return outputArgs.concat(keyInfo);
+}
 function addPerkInfo(tsResults, outputArgs) {
     let perkInfo = ['&nbsp;', '&nbsp;', 'Perks %', '&nbsp;'];
 
@@ -468,7 +584,9 @@ function updateOutput(results, msg) {
 	outputArgs = outputArgs.concat(['&nbsp;', '&nbsp;', 'item%:', (100*tsResults.items/tsResults.actions).toFixed(2)]);
 
 	if(outputItems) outputArgs = addItemOutput(tsResults, outputArgs);
-	if(outputQuests) outputArgs = outputArgs.concat(['quest%:', (100*tsResults.questItems/tsResults.questActions).toFixed(2)]);
+	outputArgs = addKeyInfo(tsResults, outputArgs);
+
+	if(outputQuests) outputArgs = outputArgs.concat(['quest%:', (100*tsResults.questItems/tsResults.questActions||0).toFixed(2)]);
 	if(outputTaxes) {
 		// scouting tax functions differently
 		if(!scoutsActive) outputArgs = addTaxPercent(tsResults, outputArgs);
@@ -501,7 +619,7 @@ function updateUI(outputArgs) {
 	}
 }
 function initializeUI() {
-	$("body").append('<div id="resourceLogContainer" style="position: absolute;top: 0;right: 0; width: 210px;"><div>Resource Log <div style="float: right;"><a href="javascript:toggleUI();">[Toggle]</a></div></div> <ul id="resourceLogList" style="display"></ul></div>');
+	$("body").append('<div id="resourceLogContainer" style="position: absolute;top: 0;right: 0; width: 210px;"><div><span>Resource Log </span><div style="float: right;"><a href="javascript:toggleUI();">[Toggle]</a></div></div> <ul id="resourceLogList" style="display;text-align: left;"></ul></div>');
 }
 function toggleUI() {
     $("#resourceLogList").toggle();
