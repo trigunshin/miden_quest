@@ -6,6 +6,11 @@ import {observable} from 'mobx';
 const resourceNames = ['ore', 'plant', 'wood', 'fish'];
 const resourceTiers = ['t1', 't2', 't3', 't4', 't5'];
 
+// residents page
+const residentPageChallenge = 'King (All access)';
+const playerLinkTemplate = _.template('getInfoPlayer.aspx?t=<%= playerId %>&null=');
+const playerIdRegex = /(\d+)/;
+
 function getKingdomResourceFormat(names, tiers) {
     let ret = [];
     ret = _.map(resourceNames, (name) => {return name + '_' + resourceTiers[0];});
@@ -84,6 +89,23 @@ function checkIfKingdomPage() {
     return $("#SubScreenTS").length > 0;
 }
 
+function checkIfResidentPage(datum) {
+    return datum.indexOf(residentPageChallenge) > 0;
+}
+function parseKingdomResidents(datum, state) {
+    const residentData = {};
+    const playerList = $('<div/>').html(datum).contents().find('a.CharLink');
+    playerList.map((i, player) => {
+        const playerName = player.text;
+        const playerId = player.onclick.toString().match(playerIdRegex)[0];  // could fail, meh
+        const playerLink = playerLinkTemplate({playerId});
+
+        residentData[playerName] = {playerName, playerLink}
+    });
+    state.residents = residentData;
+    return state;
+}
+
 class KingdomState {
     @observable wood_t1 =    -1;
     @observable wood_t2 =    -1;
@@ -112,6 +134,8 @@ class KingdomState {
 
     @observable currentTime = moment();
 
+    @observable residents = {};
+
     constructor() {}
 
     getBuildingCost = (label, nextLevel) => {
@@ -130,9 +154,13 @@ class KingdomState {
         if (arr[0] != 'LOADPAGE') {return;}
         // check for resource/building/other page
         if (checkIfKingdomPage()) {
+            console.info('parsing kingdom resources');
             const kdResourceMappings = getKingdomResourceFormat(resourceNames, resourceTiers);
             const resources = parseKingdomResources(kdResourceMappings);
             return assignKingdomResources(kdResourceMappings, state, resources);
+        } else if (checkIfResidentPage(datum)) {
+            console.info('parsing kingdom residents');
+            return parseKingdomResidents(datum, state);
         }
         return;
     };

@@ -57,7 +57,7 @@ class InventoryContainer extends React.Component {
                             <CraftingContainer />
                         </Toggle>
                         <br />
-                        <Toggle label="Kingdom"><KingdomContainer /></Toggle>
+                        <Toggle label="Kingdom"><KingdomContainer kingdomState={kingdomState} /></Toggle>
                         <br />
                         <Toggle label="Links"><LinkContainer /></Toggle>
                     </div>
