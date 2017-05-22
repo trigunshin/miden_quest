@@ -32,10 +32,13 @@ function parseTSBonus(dataArray, state) {
 
 function parseTSLvl(dataArray, state) {
     state.ts_level = parseInt(dataArray[3]);
+    state.active_ts = dataArray[2];
     return state;
 }
 
 class ROIState {
+    @observable ts_level = 'Scouting';
+
     @observable ts_level = 1;
     //@observable ts_relic_xp = 0;
     @observable ts_relic_xp_cost = 1;
