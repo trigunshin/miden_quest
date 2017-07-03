@@ -7,7 +7,7 @@ const resourceNames = ['ore', 'plant', 'wood', 'fish'];
 const resourceTiers = ['t1', 't2', 't3', 't4', 't5'];
 
 // residents page
-const residentPageChallenge = 'King (All access)';
+const residentPageChallenge = 'Special Access: All Access';
 const playerLinkTemplate = _.template('getInfoPlayer.aspx?t=<%= playerId %>&null=');
 const playerIdRegex = /(\d+)/;
 
