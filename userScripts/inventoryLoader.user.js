@@ -28,11 +28,3 @@ const   name = 'derivagral',
 $('#User').val(name);
 $('#Pass').val(pw);
 MqoLog.submit();
-
-
-// Play
-// http://www.midenquest.com/UserCharacterSelection.aspx
-$("span.ui-button-text:contains('Play')").click();
-
-// homescreen on game
-// "http://www.midenquest.com/Game.aspx"
