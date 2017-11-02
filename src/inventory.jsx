@@ -12,8 +12,12 @@ import {LinkContainer} from './quick_links.jsx';
 import ROIState from './components/tradeskillParser';
 import ExpeditionState from './components/expeditions/expeditionParser.jsx';
 import ExpeditionContainer from './components/expeditions/expeditions.jsx';
-import KingdomContainer from './components/kingdom.jsx';
+import KingdomContainer from './components/kingdom/kingdom.jsx';
+import KingdomState from './components/kingdom/kingdomParser.jsx';
+import ProfileState from './components/profiles/profileParser.jsx';
 // jquery & UI: comes on the MQO page
+const profileState = new ProfileState();
+const kingdomState = new KingdomState();
 const roiState = new ROIState();
 const expeditionState = new ExpeditionState();
 
@@ -44,6 +48,7 @@ class InventoryContainer extends React.Component {
         this.state = {};
     }
     render() {
+        //const expeditions = <Toggle label="Expeditions">{expeditionState && <ExpeditionContainer expeditionState={this.props.expeditionState} />}</Toggle>;
         return (<div className='widget'>
             <Toggle label="[-]">
                 <fieldset>
@@ -54,9 +59,7 @@ class InventoryContainer extends React.Component {
                             <CraftingContainer />
                         </Toggle>
                         <br />
-                        <Toggle label="Expeditions">{expeditionState && <ExpeditionContainer expeditionState={this.props.expeditionState} />}</Toggle>
-                        <br />
-                        <Toggle label="Kingdom"><KingdomContainer /></Toggle>
+                        <Toggle label="Kingdom"><KingdomContainer kingdomState={kingdomState} profileState={profileState} /></Toggle>
                         <br />
                         <Toggle label="Links"><LinkContainer /></Toggle>
                     </div>
@@ -98,9 +101,19 @@ function track_inventory_onmsg(evt) {
         expeditionState.currentTime = moment();
     }
 
+    if(kingdomState) {
+        KingdomState.parseKingdom(evt.data, kingdomState);
+        kingdomState.currentTime = moment();
+    }
+
     if(roiState) {
         ROIState.parse(evt.data, roiState);
         roiState.currentTime = moment();
+    }
+
+    if(profileState) {
+        ProfileState.parse(evt.data, profileState);
+        ProfileState.currentTime = moment();
     }
 }
 // set up handler & hook original game handler in

@@ -27,18 +27,18 @@ function parseTSBonus(dataArray, state) {
     //state.ts_relic_luck = dataArray[tsBonusOffsets.luck];
     state.ts_relic_luck_cost = dataArray[tsBonusOffsets.luck+5];
 
-    console.debug('updated state', state.relic_xp, state.relic_res, state.relic_wl, state.relic_drop, state.relic_luck, state);
-
     return state;
 }
 
 function parseTSLvl(dataArray, state) {
     state.ts_level = parseInt(dataArray[3]);
-    console.debug('updated state', state.relic_xp, state.relic_res, state.relic_wl, state.relic_drop, state.relic_luck, state);
+    state.active_ts = dataArray[2];
     return state;
 }
 
 class ROIState {
+    @observable ts_level = 'Scouting';
+
     @observable ts_level = 1;
     //@observable ts_relic_xp = 0;
     @observable ts_relic_xp_cost = 1;
