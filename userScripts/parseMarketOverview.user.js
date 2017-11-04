@@ -3,7 +3,7 @@
 // @namespace https://github.com/trigunshin/miden_quest
 // @description MQO market overview parser. Sends data to server.
 // @homepage https://trigunshin.github.com/miden_quest
-// @version 8
+// @version 9
 // @downloadURL http://trigunshin.github.io/miden_quest/userScripts/parseMarketOverview.user.js
 // @updateURL http://trigunshin.github.io/miden_quest/userScripts/parseMarketOverview.user.js
 // @include http://midenquest.com/Game.aspx
@@ -82,7 +82,7 @@ function parseOverview(data) {
 		var res_id = resource_id_prefix + res_suffix;
 		const resValue = parseKey(res_id);
 		post_data[res_key] = resValue;
-		influxDataLines.push([`${res_key},resource=${res_key} value=${resValue}`]);
+		influxDataLines.push([`resource,type=${res_key} value=${resValue}`]);
 	}
 	// parse resource tier keys
 	for(var i=0,iLen=deep_keys.length;i<iLen;i++) {
@@ -96,7 +96,7 @@ function parseOverview(data) {
 
 			post_data[res_key]['t'+j] = resValue;
 
-			influxDataLines.push([`${res_key}_t${j},resource=${res_key} value=${resValue}`]);
+			influxDataLines.push([`resource,type=${res_key},tier=${j} value=${resValue}`]);
 		}
 	}
 
