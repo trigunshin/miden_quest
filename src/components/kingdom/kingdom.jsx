@@ -25,16 +25,15 @@ class ResidentContainer extends React.Component {
             newState.idx = 0;
         } else {
             // get the current key, then get the current resident's info
-            console.info('navigating to ', resKeys[idx]);
             sendRequestContentFill(res[resKeys[idx]].playerLink);
 
             function getTSAttempts(data) {
-                var tsDiv = $(data).find("div:contains('tradeskill attempts')");
-                var tsNode = tsDiv[tsDiv.length-1];
-                var tsNodeParent = tsNode.parentElement;
-                var tsSiblings = tsNodeParent.childNodes;
-                var tsAttemptNode = tsSiblings[3];
-                var tsAttempts = tsAttemptNode.innerText.replace(/ /g, '');
+                const tsDiv = $(data).find("div:contains('tradeskill attempts')");
+                const tsNode = tsDiv[tsDiv.length-1];
+                const tsNodeParent = tsNode.parentElement;
+                const tsSiblings = tsNodeParent.childNodes;
+                const tsAttemptNode = tsSiblings[3];
+                const tsAttempts = tsAttemptNode.innerText.replace(/ /g, '');
                 return tsAttempts;
             }
 
@@ -43,11 +42,12 @@ class ResidentContainer extends React.Component {
         this.setState(newState);
     };
     outputResidents = () => {
-        const profile = this.props.profileState.profiles;
+        const profiles = this.props.profileState.profiles;
         const residentNames = _.keys(this.props.residents);
 
         const outputLines = residentNames.map((name) => {
-            return _.join([name, _.get(profile, name, {tsAttempts: -1}).tsAttempts], ',');
+            const profile = _.get(profiles, name, {tsAttempts: -1, karma: -1});
+            return _.join([name, profile.tsAttempts, profile.karma], ',');
         });
 
         console.info(_.join(outputLines, '\n'));

@@ -29,14 +29,14 @@ class ProfileState {
         return profileName;
     }
 
-    parseTSAttempts(data) {
-        const tsDiv = $(data).find("div:contains('radeskill attempts')");
+    parseField(data, containedText) {
+        const tsDiv = $(data).find(`div:contains('${containedText}')`);
         const tsNode = tsDiv[tsDiv.length - 1];
         const tsNodeParent = tsNode.parentElement;
         const tsSiblings = tsNodeParent.childNodes;
-        const tsAttemptNode = tsSiblings[3];
-        const tsAttempts = tsAttemptNode.innerText.replace(/ /g, '');
-        return tsAttempts;
+        const dataNode = tsSiblings[3];
+        const dataValue = dataNode.innerText.replace(/ /g, '');
+        return dataValue;
     }
 
     static parse = (datum, state) => {
@@ -44,10 +44,11 @@ class ProfileState {
         if (arr[0] != 'LOADPAGE') {return;}
         // check for resource/building/other page
         if (checkIfProfilePage(datum)) {
-            const tsAttempts = state.parseTSAttempts(datum);
+            const tsAttempts = state.parseField(datum, 'tradeskill attempts');
+            const karma = state.parseField(datum, 'Karma');
             const name = state.getProfileName(datum);
-            console.info(name, tsAttempts);
-            state.profiles[name] = {...state.profiles[name], tsAttempts};
+            console.info('profile parser:', name, tsAttempts, karma);
+            state.profiles[name] = {...state.profiles[name], tsAttempts, karma};
         }
         return state;
     }
